@@ -11,17 +11,34 @@ app.use(bodyParser());
 app.use(cors());
 
 
-const user = {
-  name: 'Petya',
-  lastname: 'Petrov'
-}
+const users = [
+  {
+    name: 'Petya',
+    lastname: 'Petrov'
+  },
+  {
+    name: 'Vasya',
+    lastname: 'Vasyilev'
+  },
+  {
+    name: 'Fedya',
+    lastname: 'Fedorov'
+  }
+]
 router.get('/api/users', async (ctx, next) => {
-  ctx.body = [user, user, user]
+  ctx.body = users
   await next()
 })
 
-router.get('/api/user', async (ctx, next) => {
-  ctx.body = user
+router.post(`/api/user`, async (ctx, next) => {
+  console.log('attempt user', ctx.request.body)
+  for (let i = 0; i < users.length; i++) {
+    if (ctx.request.body.name === users[i].name) {
+      ctx.body = users[i].lastname
+      return
+    }
+  }
+  ctx.body = 'this user was not found'
   await next()
 })
 
