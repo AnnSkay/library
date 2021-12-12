@@ -25,6 +25,34 @@ const users = [
     lastname: 'Fedorov'
   }
 ]
+
+const books = [
+  {
+    title: 'Онегин',
+    author: 'Пушкин',
+    house: 'РОСМЭН',
+    genre: 'Фэнтэзи',
+    year: 2000,
+    isAvailable: true,
+  },
+  {
+    title: 'Война и мир',
+    author: 'Толстой',
+    house: 'блабла',
+    genre: 'Фантастика',
+    year: 1900,
+    isAvailable: false,
+  },
+  {
+    title: 'Капитанская дочка',
+    author: 'Пушкин',
+    house: 'РОСМЭН',
+    genre: 'Фэнтэзи',
+    year: 2000,
+    isAvailable: false,
+  },
+]
+
 router.get('/api/users', async (ctx, next) => {
   ctx.body = users
   await next()
@@ -39,6 +67,29 @@ router.post(`/api/user`, async (ctx, next) => {
     }
   }
   ctx.body = 'this user was not found'
+  await next()
+})
+
+router.post(`/api/books`, async (ctx, next) => {
+  console.log('attempt books', ctx.request.body)
+  let booksFilter: any[];
+  booksFilter = [];
+
+  for (let i = 0; i < books.length; i++) {
+    if (books[i].title.includes(ctx.request.body.bookTitle) &&
+        books[i].author.includes(ctx.request.body.bookAuthor) &&
+        books[i].house.includes(ctx.request.body.bookPublishHouse) &&
+        books[i].genre.includes(ctx.request.body.bookGenre) &&
+        (books[i].year === Number(ctx.request.body.bookPublishYear) ||  ctx.request.body.bookPublishYear === '') &&
+        (books[i].isAvailable === ctx.request.body.bookIsAvailable && ctx.request.body.bookIsAvailable === true || ctx.request.body.bookIsAvailable === false)
+       )
+    {
+      booksFilter.push(books[i])
+    }
+  }
+
+  ctx.body = booksFilter
+
   await next()
 })
 
