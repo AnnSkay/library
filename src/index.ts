@@ -10,19 +10,59 @@ const router = new Router()
 app.use(bodyParser());
 app.use(cors());
 
+const houses = [
+  {
+    house: 'РОСМЭН',
+  },
+  {
+    house: 'Издательство1',
+  },
+  {
+    house: 'Издательство2',
+  },
+  {
+    house: 'Издательство3',
+  },
+  {
+    house: 'Издательство4',
+  },
+];
+
+const genres = [
+  {
+    genre: 'Фантастика',
+  },
+  {
+    genre: 'Фэнтэзи',
+  },
+  {
+    genre: 'Ужасы'
+  },
+  {
+    genre: 'Комедия',
+  },
+  {genre: 'Сказки',
+  },
+]
 
 const users = [
   {
-    name: 'Petya',
-    lastname: 'Petrov'
+    name: 'Петя',
+    lastname: 'Петров',
+    login: 'petya@mail.ru',
+    password: '123',
   },
   {
-    name: 'Vasya',
-    lastname: 'Vasyilev'
+    name: 'Вася',
+    lastname: 'Васильев',
+    login: 'vasya@mail.ru',
+    password: '123',
   },
   {
-    name: 'Fedya',
-    lastname: 'Fedorov'
+    name: 'Федя',
+    lastname: 'Федоров',
+    login: 'fedya@mail.ru',
+    password: '123',
   }
 ]
 
@@ -130,89 +170,22 @@ const books = [
     year: 2000,
     isAvailable: true,
   },
-  {
-    title: 'Онегин',
-    author: 'Пушкин',
-    house: 'РОСМЭН',
-    genre: 'Фэнтэзи',
-    year: 2000,
-    isAvailable: true,
-  },
-  {
-    title: 'Онегин',
-    author: 'Пушкин',
-    house: 'РОСМЭН',
-    genre: 'Фэнтэзи',
-    year: 2000,
-    isAvailable: true,
-  },
-  {
-    title: 'Онегин',
-    author: 'Пушкин',
-    house: 'РОСМЭН',
-    genre: 'Фэнтэзи',
-    year: 2000,
-    isAvailable: true,
-  },
-  {
-    title: 'Онегин',
-    author: 'Пушкин',
-    house: 'РОСМЭН',
-    genre: 'Фэнтэзи',
-    year: 2000,
-    isAvailable: true,
-  },
-  {
-    title: 'Онегин',
-    author: 'Пушкин',
-    house: 'РОСМЭН',
-    genre: 'Фэнтэзи',
-    year: 2000,
-    isAvailable: true,
-  },
-  {
-    title: 'Онегин',
-    author: 'Пушкин',
-    house: 'РОСМЭН',
-    genre: 'Фэнтэзи',
-    year: 2000,
-    isAvailable: true,
-  },
-  {
-    title: 'Онегин',
-    author: 'Пушкин',
-    house: 'РОСМЭН',
-    genre: 'Фэнтэзи',
-    year: 2000,
-    isAvailable: true,
-  },
-  {
-    title: 'Онегин',
-    author: 'Пушкин',
-    house: 'РОСМЭН',
-    genre: 'Фэнтэзи',
-    year: 2000,
-    isAvailable: true,
-  },
-  {
-    title: 'Онегин',
-    author: 'Пушкин',
-    house: 'РОСМЭН',
-    genre: 'Фэнтэзи',
-    year: 2000,
-    isAvailable: true,
-  },
-  {
-    title: 'Онегин',
-    author: 'Пушкин',
-    house: 'РОСМЭН',
-    genre: 'Фэнтэзи',
-    year: 2000,
-    isAvailable: true,
-  },
 ]
 
+router.get(`/api/genres`, async (ctx, next) => {
+  console.log('attempt genres', ctx.request.body)
+  ctx.body = genres
+  await next()
+})
+
+router.get(`/api/houses`, async (ctx, next) => {
+  console.log('attempt genres', ctx.request.body)
+  ctx.body = houses
+  await next()
+})
+
 router.get('/api/users', async (ctx, next) => {
+  console.log('attempt users', ctx.request.body)
   ctx.body = users
   await next()
 })
@@ -254,14 +227,12 @@ router.post(`/api/books`, async (ctx, next) => {
 
 router.post('/api/login', async (ctx, next) => {
   console.log('attempt login', ctx.request.body)
-  if (ctx.request.body.login === 'petya' && String(ctx.request.body.password) === '123') {
-    ctx.body = 'petya'
-    return
-  }
-
-  if (ctx.request.body.login === 'vasya' && String(ctx.request.body.password) === '123') {
-    ctx.body = 'vasya'
-    return
+  for (let i = 0; i < users.length; i++) {
+    if (ctx.request.body.login === users[i].login &&
+        ctx.request.body.password === users[i].password) {
+          ctx.body = users[i].login
+          return
+    }
   }
 
   ctx.body = 'failed'
