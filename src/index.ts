@@ -184,37 +184,73 @@ const books = [
 
 router.get(`/api/genres`, async (ctx, next) => {
   console.log('attempt genres', ctx.request.body)
+
   ctx.body = genres
+
   await next()
 })
 
 router.get(`/api/houses`, async (ctx, next) => {
   console.log('attempt houses', ctx.request.body)
+
   ctx.body = houses
+
   await next()
 })
 
 router.get('/api/users', async (ctx, next) => {
   console.log('attempt users', ctx.request.body)
+
   ctx.body = users
+
   await next()
 })
 
 router.post(`/api/user`, async (ctx, next) => {
   console.log('attempt user', ctx.request.body)
+
   for (let i = 0; i < users.length; i++) {
     if (users[i].id === Number(ctx.request.body.id)) {
-      if (users[i].name === '') {
-        ctx.body = 'Читатель'
-        return
-      } else {
         ctx.body = users[i]
         return
-      }
     }
   }
 
   ctx.body = 'this user was not found'
+
+  await next()
+})
+
+router.post(`/api/addUser`, async (ctx, next) => {
+  console.log('attempt user', ctx.request.body)
+
+  let isNew = true
+
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].login === ctx.request.body.email) {
+      ctx.body = 'Пользователь с таким email уже существует'
+      isNew = false
+      return
+    } 
+  }
+
+  if (isNew) {
+    let user: any
+    user = {}
+
+    user.id = users[users.length - 1].id + 1;
+    user.name = ctx.request.body.name
+    user.lastname = ctx.request.body.lastname
+    user.login = ctx.request.body.email
+    user.password = ctx.request.body.password
+    user.role = 'USER'
+    user.phone = ctx.request.body.phone
+
+    users.push(user)
+      
+    ctx.body = `Пользователь с ID: ${users[users.length - 1].id} добавлен`
+  }
+
   await next()
 })
 
