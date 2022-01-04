@@ -3,7 +3,6 @@ import Router from 'koa-router'
 import bodyParser from 'koa-bodyparser'
 import cors from '@koa/cors';
 
-
 const app = new Koa()
 const router = new Router()
 
@@ -217,7 +216,7 @@ let borrowedBooks = [
   },
 ]
 
-router.get(`/api/genres`, async (ctx, next) => {
+router.get('/api/genres', async (ctx, next) => {
   console.log('attempt genres', ctx.request.body)
 
   ctx.body = genres
@@ -225,7 +224,7 @@ router.get(`/api/genres`, async (ctx, next) => {
   await next()
 })
 
-router.get(`/api/houses`, async (ctx, next) => {
+router.get('/api/houses', async (ctx, next) => {
   console.log('attempt houses', ctx.request.body)
 
   ctx.body = houses
@@ -241,13 +240,13 @@ router.get('/api/users', async (ctx, next) => {
   await next()
 })
 
-router.post(`/api/user`, async (ctx, next) => {
+router.post('/api/user', async (ctx, next) => {
   console.log('attempt user', ctx.request.body)
 
   for (let i = 0; i < users.length; i++) {
-    if (users[i].id === Number(ctx.request.body.id)) {
-        ctx.body = users[i]
-        return
+    if (users[i].id === Number(ctx.request.body.userId)) {
+      ctx.body = users[i]
+      return
     }
   }
 
@@ -256,7 +255,7 @@ router.post(`/api/user`, async (ctx, next) => {
   await next()
 })
 
-router.post(`/api/addUser`, async (ctx, next) => {
+router.post('/api/addUser', async (ctx, next) => {
   console.log('attempt user', ctx.request.body)
 
   let isNew = true
@@ -266,7 +265,7 @@ router.post(`/api/addUser`, async (ctx, next) => {
       ctx.body = 'Пользователь с таким email уже существует'
       isNew = false
       return
-    } 
+    }
   }
 
   if (isNew) {
@@ -282,14 +281,13 @@ router.post(`/api/addUser`, async (ctx, next) => {
     user.phone = ctx.request.body.phone
 
     users.push(user)
-      
     ctx.body = `Пользователь с ID: ${users[users.length - 1].id} добавлен`
   }
 
   await next()
 })
 
-router.post(`/api/changeUserData`, async (ctx, next) => {
+router.post('/api/changeUserData', async (ctx, next) => {
   console.log('attempt user', ctx.request.body)
   for (let i = 0; i < users.length; i++) {
     if (users[i].id === Number(ctx.request.body.userId)) {
@@ -307,7 +305,7 @@ router.post(`/api/changeUserData`, async (ctx, next) => {
   await next()
 })
 
-router.post(`/api/changeUserPassword`, async (ctx, next) => {
+router.post('/api/changeUserPassword', async (ctx, next) => {
   console.log('attempt user', ctx.request.body)
   for (let i = 0; i < users.length; i++) {
     if (users[i].id === Number(ctx.request.body.userId)) {
@@ -322,7 +320,7 @@ router.post(`/api/changeUserPassword`, async (ctx, next) => {
   await next()
 })
 
-router.post(`/api/books`, async (ctx, next) => {
+router.post('/api/books', async (ctx, next) => {
   console.log('attempt books', ctx.request.body)
   let booksFilter: any[]
   booksFilter = []
@@ -333,9 +331,8 @@ router.post(`/api/books`, async (ctx, next) => {
         books[i].house.includes(ctx.request.body.publishHouse) &&
         books[i].genre.includes(ctx.request.body.genre) &&
         (books[i].year === Number(ctx.request.body.publishYear) || ctx.request.body.publishYear === '') &&
-        (books[i].isAvailable === ctx.request.body.isAvailable && ctx.request.body.isAvailable === true || ctx.request.body.isAvailable === false)
-       )
-    {
+        ((books[i].isAvailable === ctx.request.body.isAvailable && ctx.request.body.isAvailable === true) || ctx.request.body.isAvailable === false)
+    ) {
       booksFilter.push(books[i])
     }
   }
@@ -349,8 +346,8 @@ router.post('/api/login', async (ctx, next) => {
   for (let i = 0; i < users.length; i++) {
     if (ctx.request.body.login === users[i].login &&
         ctx.request.body.password === users[i].password) {
-          ctx.body = users[i].id
-          return
+      ctx.body = users[i].id
+      return
     }
   }
 
@@ -359,6 +356,5 @@ router.post('/api/login', async (ctx, next) => {
 })
 
 app.use(router.middleware())
-
 
 app.listen(3001)
