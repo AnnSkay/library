@@ -10,7 +10,7 @@ const router = new Router()
 app.use(bodyParser());
 app.use(cors());
 
-const houses = [
+let houses = [
   {
     house: 'РОСМЭН',
   },
@@ -28,7 +28,7 @@ const houses = [
   },
 ];
 
-const genres = [
+let genres = [
   {
     genre: 'Фантастика',
   },
@@ -76,8 +76,9 @@ let users = [
   }
 ]
 
-const books = [
+let books = [
   {
+    id: 1,
     title: 'Онегин',
     author: 'Пушкин',
     house: 'РОСМЭН',
@@ -86,6 +87,7 @@ const books = [
     isAvailable: true,
   },
   {
+    id: 2,
     title: 'Война и мир',
     author: 'Толстой',
     house: 'блабла',
@@ -94,6 +96,7 @@ const books = [
     isAvailable: false,
   },
   {
+    id: 3,
     title: 'Капитанская дочка',
     author: 'Пушкин',
     house: 'РОСМЭН',
@@ -102,6 +105,7 @@ const books = [
     isAvailable: false,
   },
   {
+    id: 4,
     title: 'Книга1',
     author: 'Пушкин',
     house: 'РОСМЭН',
@@ -110,6 +114,7 @@ const books = [
     isAvailable: true,
   },
   {
+    id: 5,
     title: 'Книга2',
     author: 'Пушкин',
     house: 'РОСМЭН',
@@ -118,6 +123,7 @@ const books = [
     isAvailable: true,
   },
   {
+    id: 6,
     title: 'Книга3',
     author: 'Пушкин',
     house: 'РОСМЭН',
@@ -126,7 +132,8 @@ const books = [
     isAvailable: true,
   },
   {
-    title: 'Онегин',
+    id: 7,
+    title: 'Книга4',
     author: 'Пушкин',
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
@@ -134,7 +141,8 @@ const books = [
     isAvailable: true,
   },
   {
-    title: 'Онегин',
+    id: 8,
+    title: 'Книга5',
     author: 'Пушкин',
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
@@ -142,7 +150,8 @@ const books = [
     isAvailable: true,
   },
   {
-    title: 'Онегин',
+    id: 9,
+    title: 'Книга6',
     author: 'Пушкин',
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
@@ -150,7 +159,8 @@ const books = [
     isAvailable: true,
   },
   {
-    title: 'Онегин',
+    id: 10,
+    title: 'Книга7',
     author: 'Пушкин',
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
@@ -158,7 +168,8 @@ const books = [
     isAvailable: true,
   },
   {
-    title: 'Онегин',
+    id: 11,
+    title: 'Книга8',
     author: 'Пушкин',
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
@@ -166,19 +177,43 @@ const books = [
     isAvailable: true,
   },
   {
-    title: 'Онегин',
+    id: 12,
+    title: 'Книга9',
     author: 'Пушкин',
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
     isAvailable: true,
-  },{
-    title: 'Онегин',
+  },
+  {
+    id: 13,
+    title: 'Книга10',
     author: 'Пушкин',
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
     isAvailable: true,
+  },
+]
+
+let borrowedBooks = [
+  {
+    bookId: 2,
+    userID: 111,
+    dateIssue: new Date(2022, 1, 4),
+    dateReturn: '',
+  },
+  {
+    bookId: 10,
+    userID: 111,
+    dateIssue: new Date(2022, 1, 3),
+    dateReturn: '',
+  },
+  {
+    bookId: 1,
+    userID: 111,
+    dateIssue: new Date(2022, 1, 2),
+    dateReturn: '',
   },
 ]
 
