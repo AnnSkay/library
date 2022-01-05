@@ -2,6 +2,7 @@ import Koa from 'koa'
 import Router from 'koa-router'
 import bodyParser from 'koa-bodyparser'
 import cors from '@koa/cors';
+import { DataType } from 'sequelize-typescript';
 
 const app = new Koa()
 const router = new Router()
@@ -198,21 +199,21 @@ let books = [
 let borrowedBooks = [
   {
     bookId: 2,
-    userID: 111,
-    dateIssue: new Date(2022, 1, 4),
-    dateReturn: '',
+    userId: 111,
+    dateIssue: new Date(2022, 0, 4),
+    dateReturn: new Date(2032, 0, 1),
   },
   {
     bookId: 10,
-    userID: 111,
-    dateIssue: new Date(2022, 1, 3),
-    dateReturn: '',
+    userId: 111,
+    dateIssue: new Date(2022, 0, 3),
+    dateReturn: new Date(2032, 0, 1),
   },
   {
     bookId: 1,
-    userID: 111,
-    dateIssue: new Date(2022, 1, 2),
-    dateReturn: '',
+    userId: 111,
+    dateIssue: new Date(2022, 0, 2),
+    dateReturn: new Date(2022, 0, 3),
   },
 ]
 
@@ -244,7 +245,7 @@ router.post('/api/user', async (ctx, next) => {
   console.log('attempt user', ctx.request.body)
 
   for (let i = 0; i < users.length; i++) {
-    if (users[i].id === Number(ctx.request.body.userId)) {
+    if (users[i].id === Number(ctx.request.body.id)) {
       ctx.body = users[i]
       return
     }
@@ -338,6 +339,42 @@ router.post('/api/books', async (ctx, next) => {
   }
 
   ctx.body = booksFilter
+  await next()
+})
+
+router.post('/api/borrowedBooks', async (ctx, next) => {
+  console.log('attempt borrowedBooks', ctx.request.body)
+  let userBorrowedBooks: any[]
+  userBorrowedBooks = []
+
+  for (let i = 0; i < borrowedBooks.length; i++) {
+    if (borrowedBooks[i].userId === Number(ctx.request.body.id) &&
+       (borrowedBooks[i].dateReturn.getTime() > new Date().getTime())
+    ) {
+      for (let j = 0; j < books.length; j++) {
+        if (books[j].id === borrowedBooks[i].bookId) {
+          userBorrowedBooks.push(books[j])
+          userBorrowedBooks[userBorrowedBooks.length - 1].dateIssue = borrowedBooks[i].dateIssue;
+        }
+      }
+    }
+  }
+
+  ctx.body = userBorrowedBooks
+  await next()
+})
+
+router.get('/api/returnBook', async (ctx, next) => {
+  console.log('attempt returnBook', ctx.request.body)
+  for (let i = 0; i < borrowedBooks.length; i++) {
+    if (borrowedBooks[i].bookId === ctx.request.body.bookId &&
+        borrowedBooks[i].userId === Number(ctx.request.body.id)) {
+          borrowedBooks[i].dateReturn = new Date();
+          console.log(borrowedBooks[i].bookId);
+        }
+  }
+
+  ctx.body = borrowedBooks
   await next()
 })
 
