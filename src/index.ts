@@ -84,7 +84,7 @@ let books = [
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
-    isAvailable: true,
+    numberCopyes: 2,
   },
   {
     id: 2,
@@ -93,7 +93,7 @@ let books = [
     house: 'блабла',
     genre: 'Фантастика',
     year: 1900,
-    isAvailable: false,
+    numberCopyes: 1,
   },
   {
     id: 3,
@@ -102,7 +102,7 @@ let books = [
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
-    isAvailable: false,
+    numberCopyes: 0,
   },
   {
     id: 4,
@@ -111,7 +111,7 @@ let books = [
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
-    isAvailable: true,
+    numberCopyes: 1,
   },
   {
     id: 5,
@@ -120,7 +120,7 @@ let books = [
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
-    isAvailable: true,
+    numberCopyes: 3,
   },
   {
     id: 6,
@@ -129,7 +129,7 @@ let books = [
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
-    isAvailable: true,
+    numberCopyes: 1,
   },
   {
     id: 7,
@@ -138,7 +138,7 @@ let books = [
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
-    isAvailable: true,
+    numberCopyes: 1,
   },
   {
     id: 8,
@@ -147,7 +147,7 @@ let books = [
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
-    isAvailable: true,
+    numberCopyes: 1,
   },
   {
     id: 9,
@@ -156,7 +156,7 @@ let books = [
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
-    isAvailable: true,
+    numberCopyes: 1,
   },
   {
     id: 10,
@@ -165,7 +165,7 @@ let books = [
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
-    isAvailable: true,
+    numberCopyes: 0,
   },
   {
     id: 11,
@@ -174,7 +174,7 @@ let books = [
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
-    isAvailable: true,
+    numberCopyes: 0,
   },
   {
     id: 12,
@@ -183,7 +183,7 @@ let books = [
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
-    isAvailable: true,
+    numberCopyes: 0,
   },
   {
     id: 13,
@@ -192,7 +192,7 @@ let books = [
     house: 'РОСМЭН',
     genre: 'Фэнтэзи',
     year: 2000,
-    isAvailable: true,
+    numberCopyes: 1,
   },
 ]
 
@@ -332,7 +332,7 @@ router.post('/api/books', async (ctx, next) => {
         books[i].house.includes(ctx.request.body.publishHouse) &&
         books[i].genre.includes(ctx.request.body.genre) &&
         (books[i].year === Number(ctx.request.body.publishYear) || ctx.request.body.publishYear === '') &&
-        ((books[i].isAvailable === ctx.request.body.isAvailable && ctx.request.body.isAvailable === true) || ctx.request.body.isAvailable === false)
+        ((books[i].numberCopyes > 0 && ctx.request.body.isAvailable === true) || ctx.request.body.isAvailable === false)
     ) {
       booksFilter.push(books[i])
     }
@@ -354,7 +354,7 @@ router.post('/api/borrowedBooks', async (ctx, next) => {
       for (let j = 0; j < books.length; j++) {
         if (books[j].id === borrowedBooks[i].bookId) {
           userBorrowedBooks.push(books[j])
-          userBorrowedBooks[userBorrowedBooks.length - 1].dateIssue = borrowedBooks[i].dateIssue;
+          userBorrowedBooks[userBorrowedBooks.length - 1].dateIssue = borrowedBooks[i].dateIssue
         }
       }
     }
@@ -364,13 +364,53 @@ router.post('/api/borrowedBooks', async (ctx, next) => {
   await next()
 })
 
-router.get('/api/returnBook', async (ctx, next) => {
+router.post('/api/takeBook', async (ctx, next) => {
+  console.log('attempt takeBook', ctx.request.body)
+  let userTakenBook = {
+    bookId: 0,
+    userId: 0,
+    dateIssue: new Date(),
+    dateReturn: new Date()
+  }
+
+  for (let i = 0; i < borrowedBooks.length; i++) {
+    if (borrowedBooks[i].bookId === Number(ctx.request.body.bookId) &&
+        borrowedBooks[i].userId === Number(ctx.request.body.id) &&
+        borrowedBooks[i].dateReturn.getTime() > new Date().getTime()) {
+          ctx.body = 'Эта книга уже была взята Вами'
+          return
+        }
+  }
+
+  for (let i = 0; i < books.length; i++) {
+    if (books[i].id === Number(ctx.request.body.bookId)) {
+          books[i].numberCopyes --
+        }
+  }
+
+  userTakenBook.bookId = Number(ctx.request.body.bookId);
+  userTakenBook.userId = Number(ctx.request.body.id);
+  userTakenBook.dateIssue = new Date();
+  userTakenBook.dateReturn =  new Date(2032, 0, 1);
+
+  borrowedBooks.push(userTakenBook);
+
+  ctx.body = 'Книга взята'
+  await next()
+})
+
+router.post('/api/returnBook', async (ctx, next) => {
   console.log('attempt returnBook', ctx.request.body)
   for (let i = 0; i < borrowedBooks.length; i++) {
-    if (borrowedBooks[i].bookId === ctx.request.body.bookId &&
+    if (borrowedBooks[i].bookId === Number(ctx.request.body.bookId) &&
         borrowedBooks[i].userId === Number(ctx.request.body.id)) {
-          borrowedBooks[i].dateReturn = new Date();
-          console.log(borrowedBooks[i].bookId);
+          borrowedBooks[i].dateReturn = new Date()
+        }
+  }
+
+  for (let i = 0; i < books.length; i++) {
+    if (books[i].id === Number(ctx.request.body.bookId)) {
+          books[i].numberCopyes ++
         }
   }
 
