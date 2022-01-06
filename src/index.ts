@@ -210,13 +210,13 @@ let borrowedBooks = [
   {
     bookId: 2,
     userId: 111,
-    dateIssue: new Date(2022, 0, 4),
+    dateIssue: new Date(2021, 11, 4, 12, 0, 0),
     dateReturn: new Date(2032, 0, 1),
   },
   {
     bookId: 10,
     userId: 111,
-    dateIssue: new Date(2022, 0, 3),
+    dateIssue: new Date(2022, 0, 3, 13, 32, 0),
     dateReturn: new Date(2032, 0, 1),
   },
   {
@@ -392,9 +392,36 @@ router.post('/api/borrowedBooks', async (ctx, next) => {
           let houseTitle = (houses.find(house => house.id === books[i].houseId) || {}).title || ''
           let genreTitle = (genres.find(genre => genre.id === books[i].genreId) || {}).title || ''
 
+          let day, month, year, hours, minutes: any
+
+          day = borrowedBooks[i].dateIssue.getDate()
+          if (day < 10) {
+            day = `0${day}`
+          }
+
+          month = borrowedBooks[i].dateIssue.getMonth() + 1
+          if (month < 10) {
+            month = `0${month}`
+          }
+
+          year = borrowedBooks[i].dateIssue.getFullYear() % 100
+          if (year < 10) {
+            year = `0${year}`
+          }
+
+          hours = borrowedBooks[i].dateIssue.getHours();
+          if (hours < 10) {
+            hours = `0${hours}`
+          }
+
+          minutes = borrowedBooks[i].dateIssue.getMinutes();
+          if (minutes < 10) {
+            minutes = `0${minutes}`
+          }
+
           userBorrowedBooks[userBorrowedBooks.length - 1].houseTitle = houseTitle
           userBorrowedBooks[userBorrowedBooks.length - 1].genreTitle = genreTitle
-          userBorrowedBooks[userBorrowedBooks.length - 1].dateIssue = borrowedBooks[i].dateIssue
+          userBorrowedBooks[userBorrowedBooks.length - 1].dateIssue = `${day}.${month}.${year}г. ${hours}:${minutes}`
         }
       }
     }
