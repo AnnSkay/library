@@ -348,24 +348,8 @@ router.post('/api/books', async (ctx, next) => {
   let booksFilter: any[]
   booksFilter = []
 
-  let houseId = -1
-  let genreId = -1
-
-  for (let i = 0; i < houses.length; i++) {
-    if (ctx.request.body.publishHouse !== '') {
-      if (ctx.request.body.publishHouse === houses[i].title) {
-        houseId = houses[i].id
-      }
-    }
-  }
-
-  for (let i = 0; i < genres.length; i++) {
-    if (ctx.request.body.genre !== '') {
-      if (ctx.request.body.genre === genres[i].title) {
-        genreId = genres[i].id
-      }
-    }
-  }
+  let houseId = (houses.find(house => house.title === ctx.request.body.publishHouse) || {}).id || -1
+  let genreId = (genres.find(genre => genre.title === ctx.request.body.genre) || {}).id || -1
 
   for (let i = 0; i < books.length; i++) {
     if (books[i].title.includes(ctx.request.body.title) &&
@@ -377,20 +361,8 @@ router.post('/api/books', async (ctx, next) => {
     ) {
       booksFilter.push(books[i])
 
-      let houseTitle = ''
-      let genreTitle = ''
-
-      for (let j = 0; j < houses.length; j++) {
-        if (houses[j].id === books[i].houseId) {
-          houseTitle = houses[j].title
-        }
-      }
-
-      for (let j = 0; j < genres.length; j++) {
-        if (genres[j].id === books[i].genreId) {
-          genreTitle = genres[j].title
-        }
-      }
+      let houseTitle = (houses.find(house => house.id === books[i].houseId) || {}).title || ''
+      let genreTitle = (genres.find(genre => genre.id === books[i].genreId) || {}).title || ''
 
       booksFilter[booksFilter.length - 1].houseTitle = houseTitle
       booksFilter[booksFilter.length - 1].genreTitle = genreTitle
@@ -417,6 +389,11 @@ router.post('/api/borrowedBooks', async (ctx, next) => {
         if (books[j].id === borrowedBooks[i].bookId) {
           userBorrowedBooks.push(books[j])
 
+          let houseTitle = (houses.find(house => house.id === books[i].houseId) || {}).title || ''
+          let genreTitle = (genres.find(genre => genre.id === books[i].genreId) || {}).title || ''
+
+          userBorrowedBooks[userBorrowedBooks.length - 1].houseTitle = houseTitle
+          userBorrowedBooks[userBorrowedBooks.length - 1].genreTitle = genreTitle
           userBorrowedBooks[userBorrowedBooks.length - 1].dateIssue = borrowedBooks[i].dateIssue
         }
       }
