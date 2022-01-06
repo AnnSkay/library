@@ -1,46 +1,46 @@
 import Koa from 'koa'
 import Router from 'koa-router'
 import bodyParser from 'koa-bodyparser'
-import cors from '@koa/cors';
+import cors from '@koa/cors'
 // import { DataType } from 'sequelize-typescript';
 
 const app = new Koa()
 const router = new Router()
 
-app.use(bodyParser());
-app.use(cors());
+app.use(bodyParser())
+app.use(cors())
 
-let houses = [
+const houses = [
   {
     id: 1,
-    title: 'РОСМЭН',
+    title: 'РОСМЭН'
   },
   {
     id: 2,
-    title: 'Издательство1',
+    title: 'Издательство1'
   },
   {
     id: 3,
-    title: 'Издательство2',
+    title: 'Издательство2'
   },
   {
     id: 4,
-    title: 'Издательство3',
+    title: 'Издательство3'
   },
   {
     id: 5,
-    title: 'Издательство4',
-  },
-];
+    title: 'Издательство4'
+  }
+]
 
-let genres = [
+const genres = [
   {
     id: 1,
-    title: 'Фантастика',
+    title: 'Фантастика'
   },
   {
     id: 2,
-    title: 'Фэнтэзи',
+    title: 'Фэнтэзи'
   },
   {
     id: 3,
@@ -48,15 +48,15 @@ let genres = [
   },
   {
     id: 4,
-    title: 'Комедия',
+    title: 'Комедия'
   },
   {
     id: 5,
-    title: 'Сказки',
-  },
+    title: 'Сказки'
+  }
 ]
 
-let users = [
+const users = [
   {
     id: 111,
     name: 'Петя',
@@ -64,7 +64,7 @@ let users = [
     login: 'petya@mail.ru',
     password: '123',
     role: 'USER',
-    phone: '89991112233',
+    phone: '89991112233'
   },
   {
     id: 222,
@@ -73,7 +73,7 @@ let users = [
     login: 'vasya@mail.ru',
     password: '123',
     role: 'LIBR',
-    phone: '89112345692',
+    phone: '89112345692'
   },
   {
     id: 333,
@@ -82,11 +82,11 @@ let users = [
     login: 'fedya@mail.ru',
     password: '123',
     role: 'ADMIN',
-    phone: '89623335823',
+    phone: '89623335823'
   }
 ]
 
-let books = [
+const books = [
   {
     id: 1,
     title: 'Онегин',
@@ -94,7 +94,7 @@ let books = [
     houseId: 1,
     genreId: 2,
     year: 2000,
-    numberCopyes: 2,
+    numberCopyes: 2
   },
   {
     id: 2,
@@ -103,7 +103,7 @@ let books = [
     houseId: 3,
     genreId: 2,
     year: 1900,
-    numberCopyes: 1,
+    numberCopyes: 1
   },
   {
     id: 3,
@@ -112,7 +112,7 @@ let books = [
     houseId: 2,
     genreId: 1,
     year: 2000,
-    numberCopyes: 0,
+    numberCopyes: 0
   },
   {
     id: 4,
@@ -121,7 +121,7 @@ let books = [
     houseId: 1,
     genreId: 5,
     year: 2000,
-    numberCopyes: 1,
+    numberCopyes: 1
   },
   {
     id: 5,
@@ -130,7 +130,7 @@ let books = [
     houseId: 5,
     genreId: 3,
     year: 2000,
-    numberCopyes: 3,
+    numberCopyes: 3
   },
   {
     id: 6,
@@ -139,7 +139,7 @@ let books = [
     houseId: 2,
     genreId: 2,
     year: 2000,
-    numberCopyes: 1,
+    numberCopyes: 1
   },
   {
     id: 7,
@@ -148,7 +148,7 @@ let books = [
     houseId: 2,
     genreId: 2,
     year: 2000,
-    numberCopyes: 1,
+    numberCopyes: 1
   },
   {
     id: 8,
@@ -157,7 +157,7 @@ let books = [
     houseId: 4,
     genreId: 4,
     year: 2000,
-    numberCopyes: 1,
+    numberCopyes: 1
   },
   {
     id: 9,
@@ -166,7 +166,7 @@ let books = [
     houseId: 1,
     genreId: 3,
     year: 2000,
-    numberCopyes: 1,
+    numberCopyes: 1
   },
   {
     id: 10,
@@ -175,7 +175,7 @@ let books = [
     houseId: 1,
     genreId: 4,
     year: 2000,
-    numberCopyes: 0,
+    numberCopyes: 0
   },
   {
     id: 11,
@@ -184,7 +184,7 @@ let books = [
     houseId: 1,
     genreId: 2,
     year: 2000,
-    numberCopyes: 0,
+    numberCopyes: 0
   },
   {
     id: 12,
@@ -193,7 +193,7 @@ let books = [
     houseId: 1,
     genreId: 2,
     year: 2000,
-    numberCopyes: 0,
+    numberCopyes: 0
   },
   {
     id: 13,
@@ -202,29 +202,29 @@ let books = [
     houseId: 1,
     genreId: 2,
     year: 2000,
-    numberCopyes: 1,
-  },
+    numberCopyes: 1
+  }
 ]
 
-let borrowedBooks = [
+const borrowedBooks = [
   {
     bookId: 2,
     userId: 111,
     dateIssue: new Date(2021, 11, 4, 12, 0, 0),
-    dateReturn: new Date(2032, 0, 1),
+    dateReturn: new Date(2032, 0, 1)
   },
   {
     bookId: 10,
     userId: 111,
     dateIssue: new Date(2022, 0, 3, 13, 32, 0),
-    dateReturn: new Date(2032, 0, 1),
+    dateReturn: new Date(2032, 0, 1)
   },
   {
     bookId: 1,
     userId: 111,
     dateIssue: new Date(2022, 0, 2),
-    dateReturn: new Date(2022, 0, 3),
-  },
+    dateReturn: new Date(2022, 0, 3)
+  }
 ]
 
 // отправляет список жанров для раскрывающего списка поиска книг
@@ -283,8 +283,7 @@ router.post('/api/addUser', async (ctx, next) => {
     }
   }
 
-  let user: any
-  user = {}
+  const user: any = {}
 
   user.id = users[users.length - 1].id + 1
   user.name = ctx.request.body.name
@@ -345,11 +344,10 @@ router.post('/api/changeUserPassword', async (ctx, next) => {
 router.post('/api/books', async (ctx, next) => {
   console.log('attempt books', ctx.request.body)
 
-  let booksFilter: any[]
-  booksFilter = []
+  const booksFilter: any[] = []
 
-  let houseId = (houses.find(house => house.title === ctx.request.body.publishHouse) || {}).id || -1
-  let genreId = (genres.find(genre => genre.title === ctx.request.body.genre) || {}).id || -1
+  const houseId = (houses.find(house => house.title === ctx.request.body.publishHouse) || {}).id || -1
+  const genreId = (genres.find(genre => genre.title === ctx.request.body.genre) || {}).id || -1
 
   for (let i = 0; i < books.length; i++) {
     if (books[i].title.includes(ctx.request.body.title) &&
@@ -361,8 +359,8 @@ router.post('/api/books', async (ctx, next) => {
     ) {
       booksFilter.push(books[i])
 
-      let houseTitle = (houses.find(house => house.id === books[i].houseId) || {}).title || ''
-      let genreTitle = (genres.find(genre => genre.id === books[i].genreId) || {}).title || ''
+      const houseTitle = (houses.find(house => house.id === books[i].houseId) || {}).title || ''
+      const genreTitle = (genres.find(genre => genre.id === books[i].genreId) || {}).title || ''
 
       booksFilter[booksFilter.length - 1].houseTitle = houseTitle
       booksFilter[booksFilter.length - 1].genreTitle = genreTitle
@@ -378,25 +376,16 @@ router.post('/api/books', async (ctx, next) => {
 router.get('/api/allBorrowedBooks', async (ctx, next) => {
   console.log('attempt allBorrowedBooks', ctx.request.body)
 
-  let allBorrowedBooks: any[]
-  allBorrowedBooks = []
+  const allBorrowedBooks: any[] = []
 
   for (let i = 0; i < borrowedBooks.length; i++) {
     if (borrowedBooks[i].dateReturn.getTime() > new Date().getTime()) {
-      let book = (books.find(book => book.id === borrowedBooks[i].bookId) || {
-        id: 0,
-        title: '',
-        author: '',
-        houseId: 0,
-        genreId: 0,
-        year: 0,
-        numberCopyes: 0,
-      }) || {}
+      const book: any = (books.find(book => book.id === borrowedBooks[i].bookId) || {}) || {}
 
       allBorrowedBooks.push(book)
 
-      let houseTitle = (houses.find(house => house.id === book.houseId) || {}).title || ''
-      let genreTitle = (genres.find(genre => genre.id === book.genreId) || {}).title || ''
+      const houseTitle = (houses.find(house => house.id === book.houseId) || {}).title || ''
+      const genreTitle = (genres.find(genre => genre.id === book.genreId) || {}).title || ''
 
       let day, month, year, hours, minutes: any
 
@@ -415,12 +404,12 @@ router.get('/api/allBorrowedBooks', async (ctx, next) => {
         year = `0${year}`
       }
 
-      hours = borrowedBooks[i].dateIssue.getHours();
+      hours = borrowedBooks[i].dateIssue.getHours()
       if (hours < 10) {
         hours = `0${hours}`
       }
 
-      minutes = borrowedBooks[i].dateIssue.getMinutes();
+      minutes = borrowedBooks[i].dateIssue.getMinutes()
       if (minutes < 10) {
         minutes = `0${minutes}`
       }
@@ -429,7 +418,7 @@ router.get('/api/allBorrowedBooks', async (ctx, next) => {
       allBorrowedBooks[allBorrowedBooks.length - 1].genreTitle = genreTitle
       allBorrowedBooks[allBorrowedBooks.length - 1].dateIssue = `${day}.${month}.${year}г. ${hours}:${minutes}`
 
-      let user = (users.find(user => user.id === borrowedBooks[i].userId) || {}) || {}
+      const user = (users.find(user => user.id === borrowedBooks[i].userId) || {}) || {}
       allBorrowedBooks[allBorrowedBooks.length - 1].user = user
     }
   }
@@ -442,8 +431,7 @@ router.get('/api/allBorrowedBooks', async (ctx, next) => {
 router.post('/api/borrowedBooksByUser', async (ctx, next) => {
   console.log('attempt borrowedBooksByUser', ctx.request.body)
 
-  let userBorrowedBooks: any[]
-  userBorrowedBooks = []
+  const userBorrowedBooks: any[] = []
 
   for (let i = 0; i < borrowedBooks.length; i++) {
     if (borrowedBooks[i].userId === Number(ctx.request.body.id) &&
@@ -453,8 +441,8 @@ router.post('/api/borrowedBooksByUser', async (ctx, next) => {
         if (books[j].id === borrowedBooks[i].bookId) {
           userBorrowedBooks.push(books[j])
 
-          let houseTitle = (houses.find(house => house.id === books[j].houseId) || {}).title || ''
-          let genreTitle = (genres.find(genre => genre.id === books[j].genreId) || {}).title || ''
+          const houseTitle = (houses.find(house => house.id === books[j].houseId) || {}).title || ''
+          const genreTitle = (genres.find(genre => genre.id === books[j].genreId) || {}).title || ''
 
           let day, month, year, hours, minutes: any
 
@@ -473,12 +461,12 @@ router.post('/api/borrowedBooksByUser', async (ctx, next) => {
             year = `0${year}`
           }
 
-          hours = borrowedBooks[i].dateIssue.getHours();
+          hours = borrowedBooks[i].dateIssue.getHours()
           if (hours < 10) {
             hours = `0${hours}`
           }
 
-          minutes = borrowedBooks[i].dateIssue.getMinutes();
+          minutes = borrowedBooks[i].dateIssue.getMinutes()
           if (minutes < 10) {
             minutes = `0${minutes}`
           }
@@ -500,7 +488,7 @@ router.post('/api/borrowedBooksByUser', async (ctx, next) => {
 router.post('/api/takeBook', async (ctx, next) => {
   console.log('attempt takeBook', ctx.request.body)
 
-  let userTakenBook = {
+  const userTakenBook = {
     bookId: 0,
     userId: 0,
     dateIssue: new Date(),
@@ -511,22 +499,22 @@ router.post('/api/takeBook', async (ctx, next) => {
     if (borrowedBooks[i].bookId === Number(ctx.request.body.bookId) &&
         borrowedBooks[i].userId === Number(ctx.request.body.id) &&
         borrowedBooks[i].dateReturn.getTime() > new Date().getTime()) {
-          ctx.body = 'Эта книга уже была взята Вами'
+      ctx.body = 'Эта книга уже была взята Вами'
 
-          return
-        }
+      return
+    }
   }
 
   for (let i = 0; i < books.length; i++) {
     if (books[i].id === Number(ctx.request.body.bookId)) {
-          books[i].numberCopyes --
-        }
+      books[i].numberCopyes--
+    }
   }
 
   userTakenBook.bookId = Number(ctx.request.body.bookId)
   userTakenBook.userId = Number(ctx.request.body.id)
   userTakenBook.dateIssue = new Date()
-  userTakenBook.dateReturn =  new Date(2032, 0, 1)
+  userTakenBook.dateReturn = new Date(2032, 0, 1)
 
   borrowedBooks.push(userTakenBook)
 
@@ -541,14 +529,14 @@ router.post('/api/returnBook', async (ctx, next) => {
   for (let i = 0; i < borrowedBooks.length; i++) {
     if (borrowedBooks[i].bookId === Number(ctx.request.body.bookId) &&
         borrowedBooks[i].userId === Number(ctx.request.body.id)) {
-          borrowedBooks[i].dateReturn = new Date()
-        }
+      borrowedBooks[i].dateReturn = new Date()
+    }
   }
 
   for (let i = 0; i < books.length; i++) {
     if (books[i].id === Number(ctx.request.body.bookId)) {
-          books[i].numberCopyes ++
-        }
+      books[i].numberCopyes++
+    }
   }
 
   ctx.body = borrowedBooks
