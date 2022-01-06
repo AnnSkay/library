@@ -374,9 +374,73 @@ router.post('/api/books', async (ctx, next) => {
   await next()
 })
 
+// отправляет список всех взятых книг
+router.get('/api/allBorrowedBooks', async (ctx, next) => {
+  console.log('attempt allBorrowedBooks', ctx.request.body)
+
+  let allBorrowedBooks: any[]
+  allBorrowedBooks = []
+
+  for (let i = 0; i < borrowedBooks.length; i++) {
+    if (borrowedBooks[i].dateReturn.getTime() > new Date().getTime()) {
+      let book = (books.find(book => book.id === borrowedBooks[i].bookId) || {
+        id: 0,
+        title: '',
+        author: '',
+        houseId: 0,
+        genreId: 0,
+        year: 0,
+        numberCopyes: 0,
+      }) || {}
+
+      allBorrowedBooks.push(book)
+
+      let houseTitle = (houses.find(house => house.id === book.houseId) || {}).title || ''
+      let genreTitle = (genres.find(genre => genre.id === book.genreId) || {}).title || ''
+
+      let day, month, year, hours, minutes: any
+
+      day = borrowedBooks[i].dateIssue.getDate()
+      if (day < 10) {
+        day = `0${day}`
+      }
+
+      month = borrowedBooks[i].dateIssue.getMonth() + 1
+      if (month < 10) {
+        month = `0${month}`
+      }
+
+      year = borrowedBooks[i].dateIssue.getFullYear() % 100
+      if (year < 10) {
+        year = `0${year}`
+      }
+
+      hours = borrowedBooks[i].dateIssue.getHours();
+      if (hours < 10) {
+        hours = `0${hours}`
+      }
+
+      minutes = borrowedBooks[i].dateIssue.getMinutes();
+      if (minutes < 10) {
+        minutes = `0${minutes}`
+      }
+
+      allBorrowedBooks[allBorrowedBooks.length - 1].houseTitle = houseTitle
+      allBorrowedBooks[allBorrowedBooks.length - 1].genreTitle = genreTitle
+      allBorrowedBooks[allBorrowedBooks.length - 1].dateIssue = `${day}.${month}.${year}г. ${hours}:${minutes}`
+
+      let user = (users.find(user => user.id === borrowedBooks[i].userId) || {}) || {}
+      allBorrowedBooks[allBorrowedBooks.length - 1].user = user
+    }
+  }
+  ctx.body = allBorrowedBooks
+
+  await next()
+})
+
 // отправляет список книг, которые находятся на руках у пользователя, по полученному id пользователя
-router.post('/api/borrowedBooks', async (ctx, next) => {
-  console.log('attempt borrowedBooks', ctx.request.body)
+router.post('/api/borrowedBooksByUser', async (ctx, next) => {
+  console.log('attempt borrowedBooksByUser', ctx.request.body)
 
   let userBorrowedBooks: any[]
   userBorrowedBooks = []
@@ -389,8 +453,8 @@ router.post('/api/borrowedBooks', async (ctx, next) => {
         if (books[j].id === borrowedBooks[i].bookId) {
           userBorrowedBooks.push(books[j])
 
-          let houseTitle = (houses.find(house => house.id === books[i].houseId) || {}).title || ''
-          let genreTitle = (genres.find(genre => genre.id === books[i].genreId) || {}).title || ''
+          let houseTitle = (houses.find(house => house.id === books[j].houseId) || {}).title || ''
+          let genreTitle = (genres.find(genre => genre.id === books[j].genreId) || {}).title || ''
 
           let day, month, year, hours, minutes: any
 
