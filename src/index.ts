@@ -72,7 +72,7 @@ let users = [
     lastname: 'Васильев',
     login: 'vasya@mail.ru',
     password: '123',
-    role: 'ADMIN',
+    role: 'LIBR',
     phone: '89112345692',
   },
   {
@@ -81,7 +81,7 @@ let users = [
     lastname: 'Федоров',
     login: 'fedya@mail.ru',
     password: '123',
-    role: 'LIBR',
+    role: 'ADMIN',
     phone: '89623335823',
   }
 ]
