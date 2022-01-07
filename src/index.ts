@@ -418,13 +418,22 @@ router.get('/api/allBorrowedBooks', async (ctx, next) => {
 
       const dateFormat = getDateFormat(borrowedBooks[i].dateIssue)
 
+      console.log('Даты: Неотр.:' + borrowedBooks[i].dateIssue + 'Отр.:' + dateFormat)
+
       allBorrowedBooks[allBorrowedBooks.length - 1].houseTitle = houseTitle
       allBorrowedBooks[allBorrowedBooks.length - 1].genreTitle = genreTitle
       allBorrowedBooks[allBorrowedBooks.length - 1].dateIssue = dateFormat
 
-      let user: {};
-      user = (users.find(user => user.id === borrowedBooks[i].userId) || {}) || {};
-      allBorrowedBooks[allBorrowedBooks.length - 1].user = user
+      console.log('Запушено: ' + allBorrowedBooks[allBorrowedBooks.length - 1].dateIssue)
+
+      let user: any = (users.find(user => user.id === borrowedBooks[i].userId) || {}) || {};
+      console.log('Найденный юзер:' + user.name)
+      allBorrowedBooks[allBorrowedBooks.length - 1].userName = user.name
+      allBorrowedBooks[allBorrowedBooks.length - 1].userLastname = user.lastname
+      allBorrowedBooks[allBorrowedBooks.length - 1].userEmail = user.login
+      allBorrowedBooks[allBorrowedBooks.length - 1].userPhone = user.phone
+
+      console.log(allBorrowedBooks)
     }
   }
   ctx.body = allBorrowedBooks
@@ -468,12 +477,7 @@ router.post('/api/borrowedBooksByUser', async (ctx, next) => {
 router.post('/api/takeBook', async (ctx, next) => {
   console.log('attempt takeBook', ctx.request.body)
 
-  const userTakenBook = {
-    bookId: 0,
-    userId: 0,
-    dateIssue: new Date(),
-    dateReturn: new Date()
-  }
+  const userTakenBook: any = {}
 
   for (let i = 0; i < borrowedBooks.length; i++) {
     if (borrowedBooks[i].bookId === Number(ctx.request.body.bookId) &&
@@ -495,6 +499,8 @@ router.post('/api/takeBook', async (ctx, next) => {
   userTakenBook.userId = Number(ctx.request.body.id)
   userTakenBook.dateIssue = new Date()
   userTakenBook.dateReturn = new Date(2032, 0, 1)
+
+  console.log(userTakenBook)
 
   borrowedBooks.push(userTakenBook)
 
@@ -541,4 +547,4 @@ router.post('/api/login', async (ctx, next) => {
 
 app.use(router.middleware())
 
-app.listen(3001)
+app.listen(3002)
