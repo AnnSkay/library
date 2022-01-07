@@ -94,7 +94,7 @@ const books = [
     houseId: 1,
     genreId: 2,
     year: 2000,
-    numberCopyes: 2
+    numberCopies: 2
   },
   {
     id: 2,
@@ -103,7 +103,7 @@ const books = [
     houseId: 3,
     genreId: 2,
     year: 1900,
-    numberCopyes: 1
+    numberCopies: 1
   },
   {
     id: 3,
@@ -112,7 +112,7 @@ const books = [
     houseId: 2,
     genreId: 1,
     year: 2000,
-    numberCopyes: 0
+    numberCopies: 0
   },
   {
     id: 4,
@@ -121,7 +121,7 @@ const books = [
     houseId: 1,
     genreId: 5,
     year: 2000,
-    numberCopyes: 1
+    numberCopies: 1
   },
   {
     id: 5,
@@ -130,7 +130,7 @@ const books = [
     houseId: 5,
     genreId: 3,
     year: 2000,
-    numberCopyes: 3
+    numberCopies: 3
   },
   {
     id: 6,
@@ -139,7 +139,7 @@ const books = [
     houseId: 2,
     genreId: 2,
     year: 2000,
-    numberCopyes: 1
+    numberCopies: 1
   },
   {
     id: 7,
@@ -148,7 +148,7 @@ const books = [
     houseId: 2,
     genreId: 2,
     year: 2000,
-    numberCopyes: 1
+    numberCopies: 1
   },
   {
     id: 8,
@@ -157,7 +157,7 @@ const books = [
     houseId: 4,
     genreId: 4,
     year: 2000,
-    numberCopyes: 1
+    numberCopies: 1
   },
   {
     id: 9,
@@ -166,7 +166,7 @@ const books = [
     houseId: 1,
     genreId: 3,
     year: 2000,
-    numberCopyes: 1
+    numberCopies: 1
   },
   {
     id: 10,
@@ -175,7 +175,7 @@ const books = [
     houseId: 1,
     genreId: 4,
     year: 2000,
-    numberCopyes: 0
+    numberCopies: 0
   },
   {
     id: 11,
@@ -184,7 +184,7 @@ const books = [
     houseId: 1,
     genreId: 2,
     year: 2000,
-    numberCopyes: 0
+    numberCopies: 0
   },
   {
     id: 12,
@@ -193,7 +193,7 @@ const books = [
     houseId: 1,
     genreId: 2,
     year: 2000,
-    numberCopyes: 0
+    numberCopies: 0
   },
   {
     id: 13,
@@ -202,7 +202,7 @@ const books = [
     houseId: 1,
     genreId: 2,
     year: 2000,
-    numberCopyes: 1
+    numberCopies: 1
   }
 ]
 
@@ -355,7 +355,7 @@ router.post('/api/books', async (ctx, next) => {
         (books[i].houseId === houseId || ctx.request.body.publishHouse === '') &&
         (books[i].genreId === genreId || ctx.request.body.genre === '') &&
         (books[i].year === Number(ctx.request.body.publishYear) || ctx.request.body.publishYear === '') &&
-        ((books[i].numberCopyes > 0 && ctx.request.body.isAvailable === true) || ctx.request.body.isAvailable === false)
+        ((books[i].numberCopies > 0 && ctx.request.body.isAvailable === true) || ctx.request.body.isAvailable === false)
     ) {
       booksFilter.push(books[i])
 
@@ -372,6 +372,35 @@ router.post('/api/books', async (ctx, next) => {
   await next()
 })
 
+const getDateFormat = (date: any) => {
+  let day: any = date.getDate()
+  if (day < 10) {
+    day = `0${day}`
+  }
+
+  let month: any = date.getMonth() + 1
+  if (month < 10) {
+    month = `0${month}`
+  }
+
+  let year: any = date.getFullYear() % 100
+  if (year < 10) {
+    year = `0${year}`
+  }
+
+  let hours: any = date.getHours()
+  if (hours < 10) {
+    hours = `0${hours}`
+  }
+
+  let minutes: any = date.getMinutes()
+  if (minutes < 10) {
+    minutes = `0${minutes}`
+  }
+
+  return `${day}.${month}.${year}г. ${hours}:${minutes}`
+}
+
 // отправляет список всех взятых книг
 router.get('/api/allBorrowedBooks', async (ctx, next) => {
   console.log('attempt allBorrowedBooks', ctx.request.body)
@@ -387,38 +416,14 @@ router.get('/api/allBorrowedBooks', async (ctx, next) => {
       const houseTitle = (houses.find(house => house.id === book.houseId) || {}).title || ''
       const genreTitle = (genres.find(genre => genre.id === book.genreId) || {}).title || ''
 
-      let day, month, year, hours, minutes: any
-
-      day = borrowedBooks[i].dateIssue.getDate()
-      if (day < 10) {
-        day = `0${day}`
-      }
-
-      month = borrowedBooks[i].dateIssue.getMonth() + 1
-      if (month < 10) {
-        month = `0${month}`
-      }
-
-      year = borrowedBooks[i].dateIssue.getFullYear() % 100
-      if (year < 10) {
-        year = `0${year}`
-      }
-
-      hours = borrowedBooks[i].dateIssue.getHours()
-      if (hours < 10) {
-        hours = `0${hours}`
-      }
-
-      minutes = borrowedBooks[i].dateIssue.getMinutes()
-      if (minutes < 10) {
-        minutes = `0${minutes}`
-      }
+      const dateFormat = getDateFormat(borrowedBooks[i].dateIssue)
 
       allBorrowedBooks[allBorrowedBooks.length - 1].houseTitle = houseTitle
       allBorrowedBooks[allBorrowedBooks.length - 1].genreTitle = genreTitle
-      allBorrowedBooks[allBorrowedBooks.length - 1].dateIssue = `${day}.${month}.${year}г. ${hours}:${minutes}`
+      allBorrowedBooks[allBorrowedBooks.length - 1].dateIssue = dateFormat
 
-      const user = (users.find(user => user.id === borrowedBooks[i].userId) || {}) || {}
+      let user: {};
+      user = (users.find(user => user.id === borrowedBooks[i].userId) || {}) || {};
       allBorrowedBooks[allBorrowedBooks.length - 1].user = user
     }
   }
@@ -444,36 +449,11 @@ router.post('/api/borrowedBooksByUser', async (ctx, next) => {
           const houseTitle = (houses.find(house => house.id === books[j].houseId) || {}).title || ''
           const genreTitle = (genres.find(genre => genre.id === books[j].genreId) || {}).title || ''
 
-          let day, month, year, hours, minutes: any
-
-          day = borrowedBooks[i].dateIssue.getDate()
-          if (day < 10) {
-            day = `0${day}`
-          }
-
-          month = borrowedBooks[i].dateIssue.getMonth() + 1
-          if (month < 10) {
-            month = `0${month}`
-          }
-
-          year = borrowedBooks[i].dateIssue.getFullYear() % 100
-          if (year < 10) {
-            year = `0${year}`
-          }
-
-          hours = borrowedBooks[i].dateIssue.getHours()
-          if (hours < 10) {
-            hours = `0${hours}`
-          }
-
-          minutes = borrowedBooks[i].dateIssue.getMinutes()
-          if (minutes < 10) {
-            minutes = `0${minutes}`
-          }
+          const dateFormat = getDateFormat(borrowedBooks[i].dateIssue)
 
           userBorrowedBooks[userBorrowedBooks.length - 1].houseTitle = houseTitle
           userBorrowedBooks[userBorrowedBooks.length - 1].genreTitle = genreTitle
-          userBorrowedBooks[userBorrowedBooks.length - 1].dateIssue = `${day}.${month}.${year}г. ${hours}:${minutes}`
+          userBorrowedBooks[userBorrowedBooks.length - 1].dateIssue = dateFormat
         }
       }
     }
@@ -507,7 +487,7 @@ router.post('/api/takeBook', async (ctx, next) => {
 
   for (let i = 0; i < books.length; i++) {
     if (books[i].id === Number(ctx.request.body.bookId)) {
-      books[i].numberCopyes--
+      books[i].numberCopies--
     }
   }
 
@@ -535,7 +515,7 @@ router.post('/api/returnBook', async (ctx, next) => {
 
   for (let i = 0; i < books.length; i++) {
     if (books[i].id === Number(ctx.request.body.bookId)) {
-      books[i].numberCopyes++
+      books[i].numberCopies++
     }
   }
 
