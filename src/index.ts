@@ -409,31 +409,34 @@ router.get('/api/allBorrowedBooks', async (ctx, next) => {
 
   for (let i = 0; i < borrowedBooks.length; i++) {
     if (borrowedBooks[i].dateReturn.getTime() > new Date().getTime()) {
-      const book: any = (books.find(book => book.id === borrowedBooks[i].bookId) || {}) || {}
+      let borrowedBook: any = {}
 
-      allBorrowedBooks.push(book)
+      const bookInf: any = (books.find(book => book.id === borrowedBooks[i].bookId) || {}) || {}
 
-      const houseTitle = (houses.find(house => house.id === book.houseId) || {}).title || ''
-      const genreTitle = (genres.find(genre => genre.id === book.genreId) || {}).title || ''
+      borrowedBook.id = bookInf.id
+      borrowedBook.title = bookInf.title
+      borrowedBook.author = bookInf.author
+      borrowedBook. houseId = bookInf. houseId
+      borrowedBook.genreId = bookInf.genreId
+      borrowedBook.year = bookInf.year
+
+      const houseTitle = (houses.find(house => house.id === bookInf.houseId) || {}).title || ''
+      const genreTitle = (genres.find(genre => genre.id === bookInf.genreId) || {}).title || ''
 
       const dateFormat = getDateFormat(borrowedBooks[i].dateIssue)
 
-      console.log('Даты: Неотр.:' + borrowedBooks[i].dateIssue + 'Отр.:' + dateFormat)
-
-      allBorrowedBooks[allBorrowedBooks.length - 1].houseTitle = houseTitle
-      allBorrowedBooks[allBorrowedBooks.length - 1].genreTitle = genreTitle
-      allBorrowedBooks[allBorrowedBooks.length - 1].dateIssue = dateFormat
-
-      console.log('Запушено: ' + allBorrowedBooks[allBorrowedBooks.length - 1].dateIssue)
+      borrowedBook.houseTitle = houseTitle
+      borrowedBook.genreTitle = genreTitle
+      borrowedBook.dateIssue = borrowedBooks[i].dateIssue
+      borrowedBook.dateIssueFormat = dateFormat
 
       let user: any = (users.find(user => user.id === borrowedBooks[i].userId) || {}) || {};
-      console.log('Найденный юзер:' + user.name)
-      allBorrowedBooks[allBorrowedBooks.length - 1].userName = user.name
-      allBorrowedBooks[allBorrowedBooks.length - 1].userLastname = user.lastname
-      allBorrowedBooks[allBorrowedBooks.length - 1].userEmail = user.login
-      allBorrowedBooks[allBorrowedBooks.length - 1].userPhone = user.phone
+      borrowedBook.userName = user.name
+      borrowedBook.userLastname = user.lastname
+      borrowedBook.userEmail = user.login
+      borrowedBook.userPhone = user.phone
 
-      console.log(allBorrowedBooks)
+      allBorrowedBooks.push(borrowedBook)
     }
   }
   ctx.body = allBorrowedBooks
