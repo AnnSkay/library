@@ -13,22 +13,26 @@ app.use(cors())
 const houses = [
   {
     id: 1,
-    title: 'РОСМЭН'
+    title: 'Нет издательства'
   },
   {
     id: 2,
-    title: 'Издательство1'
+    title: 'РОСМЭН'
   },
   {
     id: 3,
-    title: 'Издательство2'
+    title: 'Издательство1'
   },
   {
     id: 4,
-    title: 'Издательство3'
+    title: 'Издательство2'
   },
   {
     id: 5,
+    title: 'Издательство3'
+  },
+  {
+    id: 6,
     title: 'Издательство4'
   }
 ]
@@ -36,22 +40,26 @@ const houses = [
 const genres = [
   {
     id: 1,
-    title: 'Фантастика'
+    title: 'Нет жанра'
   },
   {
     id: 2,
-    title: 'Фэнтэзи'
+    title: 'Фантастика'
   },
   {
     id: 3,
-    title: 'Ужасы'
+    title: 'Фэнтэзи'
   },
   {
     id: 4,
-    title: 'Комедия'
+    title: 'Ужасы'
   },
   {
     id: 5,
+    title: 'Комедия'
+  },
+  {
+    id: 6,
     title: 'Сказки'
   }
 ]
@@ -472,6 +480,98 @@ router.post('/api/borrowedBooksByUser', async (ctx, next) => {
   }
 
   ctx.body = userBorrowedBooks
+
+  await next()
+})
+
+// отправляет список книг по полученному автору
+router.post('/api/booksByTitle', async (ctx, next) => {
+  console.log('attempt booksByTitle', ctx.request.body)
+
+  const booksByTitle: any[] = []
+
+  for (let i = 0; i < books.length; i++) {
+    if (books[i].title.includes(ctx.request.body. searchingBookTitle)) {
+      booksByTitle.push(books[i])
+    }
+  }
+
+  ctx.body = booksByTitle
+
+  await next()
+})
+
+// позволяет добавить новую книгу
+router.post('/api/addBook', async (ctx, next) => {
+  console.log('attempt addBook', ctx.request.body)
+
+  const addingBook: any = {}
+
+  let publishHouseTitle: string = ctx.request.body.publishHouse
+  let genreTitle: string = ctx.request.body.genre
+
+  if (!ctx.request.body.publishHouse) {
+    if (!ctx.request.body.otherPublishHouse) {
+      publishHouseTitle = 'Нет издательства'
+    } else {
+      const findSameHouse = (houses.find(house => house.title === ctx.request.body.otherPublishHouse) || {}).title || ''
+
+      if (findSameHouse) {
+        publishHouseTitle = findSameHouse
+      } else {
+        const house: any = {}
+        house.id = houses[houses.length - 1].id + 1
+        house.title = ctx.request.body.otherPublishHouse
+        houses.push(house)
+        publishHouseTitle = ctx.request.body.otherPublishHouse
+      }
+    }
+  }
+
+  if (!ctx.request.body.genre) {
+    if (!ctx.request.body.otherGenre) {
+      genreTitle = 'Нет жанра'
+    } else {
+      const findSameGenre = (genres.find(genre => genre.title === ctx.request.body.otherGenre) || {}).title || ''
+
+      if (findSameGenre) {
+        genreTitle = findSameGenre
+      } else {
+        const genre: any = {}
+        genre.id = genres[genres.length - 1].id + 1
+        genre.title = ctx.request.body.otherGenre
+        genres.push(genre)
+        genreTitle = ctx.request.body.otherGenre
+      }
+    }
+  }
+
+  const houseId = (houses.find(house => house.title === publishHouseTitle) || {}).id || ''
+  const genreId = (genres.find(genre => genre.title === genreTitle) || {}).id || ''
+
+  for (let i = 0; i < books.length; i++) {
+    if (ctx.request.body.title === books[i].title &&
+        ctx.request.body.author === books[i].author &&
+        houseId === books[i].houseId &&
+        genreId === books[i].genreId &&
+        Number(ctx.request.body.publishYear) === books[i].year
+    ) {
+      ctx.body = 'Такая книга уже существует'
+      return
+    }
+  }
+
+  addingBook.id = books[books.length - 1].id + 1
+  addingBook.title = ctx.request.body.title
+  addingBook.author = ctx.request.body.author
+  addingBook.houseId = houseId
+  addingBook.genreId = genreId
+  addingBook.year = Number(ctx.request.body.publishYear)
+  addingBook.numberCopies = Number(ctx.request.body.numberCopies)
+
+  books.push(addingBook)
+
+  ctx.body = 'Книга добавлена'
 
   await next()
 })
