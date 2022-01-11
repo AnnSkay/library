@@ -493,6 +493,12 @@ router.post('/api/booksByTitle', async (ctx, next) => {
   for (let i = 0; i < books.length; i++) {
     if (books[i].title.includes(ctx.request.body. searchingBookTitle)) {
       booksByTitle.push(books[i])
+
+      const houseTitle = (houses.find(house => house.id === books[i].houseId) || {}).title || ''
+      const genreTitle = (genres.find(genre => genre.id === books[i].genreId) || {}).title || ''
+
+      booksByTitle[booksByTitle.length - 1].houseTitle = houseTitle
+      booksByTitle[booksByTitle.length - 1].genreTitle = genreTitle
     }
   }
 
@@ -501,30 +507,43 @@ router.post('/api/booksByTitle', async (ctx, next) => {
   await next()
 })
 
+const findSameElementInArray = (array: any[], nameArray: string, findingElement: string) => {
+  const sameElement: string = (array.find(element => element.title === findingElement) || {}).title || ''
+
+  if (sameElement) {
+    return sameElement
+  } else {
+    const obj: any = {}
+
+    obj.id = array[array.length - 1].id + 1
+    obj.title = findingElement
+
+    switch (nameArray) {
+      case 'houses':
+        houses.push(obj)
+        return
+      case 'genres':
+        genres.push(obj)
+    }
+
+    return findingElement
+  }
+}
+
 // позволяет добавить новую книгу
 router.post('/api/addBook', async (ctx, next) => {
   console.log('attempt addBook', ctx.request.body)
 
   const addingBook: any = {}
 
-  let publishHouseTitle: string = ctx.request.body.publishHouse
-  let genreTitle: string = ctx.request.body.genre
+  let publishHouseTitle: any = ctx.request.body.publishHouse
+  let genreTitle: any = ctx.request.body.genre
 
   if (!ctx.request.body.publishHouse) {
     if (!ctx.request.body.otherPublishHouse) {
       publishHouseTitle = 'Нет издательства'
     } else {
-      const findSameHouse = (houses.find(house => house.title === ctx.request.body.otherPublishHouse) || {}).title || ''
-
-      if (findSameHouse) {
-        publishHouseTitle = findSameHouse
-      } else {
-        const house: any = {}
-        house.id = houses[houses.length - 1].id + 1
-        house.title = ctx.request.body.otherPublishHouse
-        houses.push(house)
-        publishHouseTitle = ctx.request.body.otherPublishHouse
-      }
+      publishHouseTitle = findSameElementInArray(houses, 'houses', ctx.request.body.otherPublishHouse)
     }
   }
 
@@ -532,17 +551,19 @@ router.post('/api/addBook', async (ctx, next) => {
     if (!ctx.request.body.otherGenre) {
       genreTitle = 'Нет жанра'
     } else {
-      const findSameGenre = (genres.find(genre => genre.title === ctx.request.body.otherGenre) || {}).title || ''
+      genreTitle = findSameElementInArray(genres, 'genres', ctx.request.body.otherGenre)
 
-      if (findSameGenre) {
-        genreTitle = findSameGenre
-      } else {
-        const genre: any = {}
-        genre.id = genres[genres.length - 1].id + 1
-        genre.title = ctx.request.body.otherGenre
-        genres.push(genre)
-        genreTitle = ctx.request.body.otherGenre
-      }
+      // const findSameGenre = (genres.find(genre => genre.title === ctx.request.body.otherGenre) || {}).title || ''
+      //
+      // if (findSameGenre) {
+      //   genreTitle = findSameGenre
+      // } else {
+      //   const genre: any = {}
+      //   genre.id = genres[genres.length - 1].id + 1
+      //   genre.title = ctx.request.body.otherGenre
+      //   genres.push(genre)
+      //   genreTitle = ctx.request.body.otherGenre
+      // }
     }
   }
 
