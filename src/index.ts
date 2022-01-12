@@ -235,6 +235,71 @@ const borrowedBooks = [
   }
 ]
 
+// функция получения даты в формате 'dd.mm.yy г. hh:mm'
+const getDateFormat = (date: any) => {
+  let day: any = date.getDate()
+  if (day < 10) {
+    day = `0${day}`
+  }
+
+  let month: any = date.getMonth() + 1
+  if (month < 10) {
+    month = `0${month}`
+  }
+
+  let year: any = date.getFullYear() % 100
+  if (year < 10) {
+    year = `0${year}`
+  }
+
+  let hours: any = date.getHours()
+  if (hours < 10) {
+    hours = `0${hours}`
+  }
+
+  let minutes: any = date.getMinutes()
+  if (minutes < 10) {
+    minutes = `0${minutes}`
+  }
+
+  return `${day}.${month}.${year} г. ${hours}:${minutes}`
+}
+
+// функция получения книги с жанром и издательством в виде текста, а не id
+const getBookData = (book: any) => {
+  const houseTitle = (houses.find(house => house.id === book.houseId) || {}).title || ''
+  const genreTitle = (genres.find(genre => genre.id === book.genreId) || {}).title || ''
+
+  book.houseTitle = houseTitle
+  book.genreTitle = genreTitle
+
+  return book
+}
+
+// функция определения правильного жанра/издательства для добавления новой книги
+const getUniqueBookValue = (array: any[], nameArray: string, findingElement: string) => {
+  const sameElement: string = (array.find(element => element.title === findingElement) || {}).title || ''
+
+  if (sameElement) {
+    return sameElement
+  } else {
+    const obj: any = {}
+
+    obj.id = array[array.length - 1].id + 1
+    obj.title = findingElement
+
+    switch (nameArray) {
+      case 'houses':
+        houses.push(obj)
+        return
+      case 'genres':
+        genres.push(obj)
+    }
+
+    return findingElement
+  }
+}
+
 // отправляет список жанров для раскрывающего списка поиска книг
 router.get('/api/genres', async (ctx, next) => {
   console.log('attempt genres', ctx.request.body)
@@ -253,28 +318,11 @@ router.get('/api/houses', async (ctx, next) => {
   await next()
 })
 
-// получение списка всех пользователей (тестовый запрос, нигде не используется)
-// router.get('/api/users', async (ctx, next) => {
-//   console.log('attempt users', ctx.request.body)
-
-//   ctx.body = users
-
-//   await next()
-// })
-
 // отправляет данные пользователя по полученному id
 router.post('/api/user', async (ctx, next) => {
   console.log('attempt user', ctx.request.body)
 
-  for (let i = 0; i < users.length; i++) {
-    if (users[i].id === Number(ctx.request.body.id)) {
-      ctx.body = users[i]
-
-      return
-    }
-  }
-
-  ctx.body = 'this user was not found'
+  ctx.body = users.find(user => user.id === Number(ctx.request.body.id)) || 'this user was not found'
 
   await next()
 })
@@ -303,7 +351,7 @@ router.post('/api/addUser', async (ctx, next) => {
 
   users.push(user)
 
-  ctx.body = `Пользователь с ID: ${users[users.length - 1].id} добавлен`
+  ctx.body = `Вы зарегистрированы`
 
   await next()
 })
@@ -320,6 +368,7 @@ router.post('/api/changeUserData', async (ctx, next) => {
       users[i].phone = ctx.request.body.phone
 
       ctx.body = users[i]
+
       return
     }
   }
@@ -365,13 +414,7 @@ router.post('/api/books', async (ctx, next) => {
         (books[i].year === Number(ctx.request.body.publishYear) || ctx.request.body.publishYear === '') &&
         ((books[i].numberCopies > 0 && ctx.request.body.isAvailable === true) || ctx.request.body.isAvailable === false)
     ) {
-      booksFilter.push(books[i])
-
-      const houseTitle = (houses.find(house => house.id === books[i].houseId) || {}).title || ''
-      const genreTitle = (genres.find(genre => genre.id === books[i].genreId) || {}).title || ''
-
-      booksFilter[booksFilter.length - 1].houseTitle = houseTitle
-      booksFilter[booksFilter.length - 1].genreTitle = genreTitle
+      booksFilter.push(getBookData(books[i]))
     }
   }
 
@@ -379,35 +422,6 @@ router.post('/api/books', async (ctx, next) => {
 
   await next()
 })
-
-const getDateFormat = (date: any) => {
-  let day: any = date.getDate()
-  if (day < 10) {
-    day = `0${day}`
-  }
-
-  let month: any = date.getMonth() + 1
-  if (month < 10) {
-    month = `0${month}`
-  }
-
-  let year: any = date.getFullYear() % 100
-  if (year < 10) {
-    year = `0${year}`
-  }
-
-  let hours: any = date.getHours()
-  if (hours < 10) {
-    hours = `0${hours}`
-  }
-
-  let minutes: any = date.getMinutes()
-  if (minutes < 10) {
-    minutes = `0${minutes}`
-  }
-
-  return `${day}.${month}.${year}г. ${hours}:${minutes}`
-}
 
 // отправляет список всех взятых книг
 router.get('/api/allBorrowedBooks', async (ctx, next) => {
@@ -419,7 +433,8 @@ router.get('/api/allBorrowedBooks', async (ctx, next) => {
     if (borrowedBooks[i].dateReturn.getTime() > new Date().getTime()) {
       let borrowedBook: any = {}
 
-      const bookInf: any = (books.find(book => book.id === borrowedBooks[i].bookId) || {}) || {}
+      const bookInf: any = books.find(book => book.id === borrowedBooks[i].bookId) || {}
+      const user: any = users.find(user => user.id === borrowedBooks[i].userId) || {}
 
       borrowedBook.id = bookInf.id
       borrowedBook.title = bookInf.title
@@ -438,7 +453,6 @@ router.get('/api/allBorrowedBooks', async (ctx, next) => {
       borrowedBook.dateIssue = borrowedBooks[i].dateIssue
       borrowedBook.dateIssueFormat = dateFormat
 
-      let user: any = (users.find(user => user.id === borrowedBooks[i].userId) || {}) || {};
       borrowedBook.userName = user.name
       borrowedBook.userLastname = user.lastname
       borrowedBook.userEmail = user.login
@@ -447,6 +461,7 @@ router.get('/api/allBorrowedBooks', async (ctx, next) => {
       allBorrowedBooks.push(borrowedBook)
     }
   }
+
   ctx.body = allBorrowedBooks
 
   await next()
@@ -491,14 +506,8 @@ router.post('/api/booksByTitle', async (ctx, next) => {
   const booksByTitle: any[] = []
 
   for (let i = 0; i < books.length; i++) {
-    if (books[i].title.includes(ctx.request.body. searchingBookTitle)) {
-      booksByTitle.push(books[i])
-
-      const houseTitle = (houses.find(house => house.id === books[i].houseId) || {}).title || ''
-      const genreTitle = (genres.find(genre => genre.id === books[i].genreId) || {}).title || ''
-
-      booksByTitle[booksByTitle.length - 1].houseTitle = houseTitle
-      booksByTitle[booksByTitle.length - 1].genreTitle = genreTitle
+    if (books[i].title.includes(ctx.request.body.searchingBookTitle)) {
+      booksByTitle.push(getBookData(books[i]))
     }
   }
 
@@ -506,29 +515,6 @@ router.post('/api/booksByTitle', async (ctx, next) => {
 
   await next()
 })
-
-const findSameElementInArray = (array: any[], nameArray: string, findingElement: string) => {
-  const sameElement: string = (array.find(element => element.title === findingElement) || {}).title || ''
-
-  if (sameElement) {
-    return sameElement
-  } else {
-    const obj: any = {}
-
-    obj.id = array[array.length - 1].id + 1
-    obj.title = findingElement
-
-    switch (nameArray) {
-      case 'houses':
-        houses.push(obj)
-        return
-      case 'genres':
-        genres.push(obj)
-    }
-
-    return findingElement
-  }
-}
 
 // позволяет добавить новую книгу
 router.post('/api/addBook', async (ctx, next) => {
@@ -543,7 +529,7 @@ router.post('/api/addBook', async (ctx, next) => {
     if (!ctx.request.body.otherPublishHouse) {
       publishHouseTitle = 'Нет издательства'
     } else {
-      publishHouseTitle = findSameElementInArray(houses, 'houses', ctx.request.body.otherPublishHouse)
+      publishHouseTitle = getUniqueBookValue(houses, 'houses', ctx.request.body.otherPublishHouse)
     }
   }
 
@@ -551,7 +537,7 @@ router.post('/api/addBook', async (ctx, next) => {
     if (!ctx.request.body.otherGenre) {
       genreTitle = 'Нет жанра'
     } else {
-      genreTitle = findSameElementInArray(genres, 'genres', ctx.request.body.otherGenre)
+      genreTitle = getUniqueBookValue(genres, 'genres', ctx.request.body.otherGenre)
 
       // const findSameGenre = (genres.find(genre => genre.title === ctx.request.body.otherGenre) || {}).title || ''
       //
@@ -578,6 +564,7 @@ router.post('/api/addBook', async (ctx, next) => {
         Number(ctx.request.body.publishYear) === books[i].year
     ) {
       ctx.body = 'Такая книга уже существует'
+
       return
     }
   }
@@ -624,8 +611,6 @@ router.post('/api/takeBook', async (ctx, next) => {
   userTakenBook.dateIssue = new Date()
   userTakenBook.dateReturn = new Date(2032, 0, 1)
 
-  console.log(userTakenBook)
-
   borrowedBooks.push(userTakenBook)
 
   ctx.body = 'Книга взята'
@@ -657,6 +642,7 @@ router.post('/api/returnBook', async (ctx, next) => {
 // осуществляет вход пользователя по логину и паролю
 router.post('/api/login', async (ctx, next) => {
   console.log('attempt login', ctx.request.body)
+
   for (let i = 0; i < users.length; i++) {
     if (ctx.request.body.login === users[i].login &&
         ctx.request.body.password === users[i].password) {
@@ -666,6 +652,7 @@ router.post('/api/login', async (ctx, next) => {
   }
 
   ctx.body = 'failed'
+
   await next()
 })
 
