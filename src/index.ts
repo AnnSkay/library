@@ -291,7 +291,7 @@ const getUniqueBookValue = (array: any[], nameArray: string, findingElement: str
     switch (nameArray) {
       case 'houses':
         houses.push(obj)
-        return
+        break
       case 'genres':
         genres.push(obj)
     }
