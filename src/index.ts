@@ -94,7 +94,7 @@ const users = [
   }
 ]
 
-const books = [
+let books = [
   {
     id: 1,
     title: 'Онегин',
@@ -614,6 +614,17 @@ router.post('/api/takeBook', async (ctx, next) => {
   borrowedBooks.push(userTakenBook)
 
   ctx.body = 'Книга взята'
+
+  await next()
+})
+
+// позволяет удалить книгу
+router.post('/api/deleteBook', async (ctx, next) => {
+  console.log('attempt deleteBook', ctx.request.body)
+
+  books = books.filter(book => book.id !== ctx.request.body.bookId)
+
+  ctx.body = 'Книга удалена'
 
   await next()
 })
