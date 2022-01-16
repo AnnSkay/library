@@ -2,7 +2,6 @@ import Koa from 'koa'
 import Router from 'koa-router'
 import bodyParser from 'koa-bodyparser'
 import cors from '@koa/cors'
-// import { DataType } from 'sequelize-typescript';
 
 const app = new Koa()
 const router = new Router()
@@ -347,8 +346,7 @@ const getUniqueBookValue = (array: HouseAndGenreType[], nameArray: string, findi
 router.post('/api/users/user-data', async (ctx, next) => {
   console.log('attempt user', ctx.request.body)
 
-  ctx.body = users.find(user => user.id === Number(ctx.request.body.id)) || 'this user was not found'
-
+  ctx.body = users.find(user => user.id === Number(ctx.request.body.id)) || 'no user'
   await next()
 })
 
@@ -640,7 +638,7 @@ router.post('/api/books/add-book', async (ctx, next) => {
   addingBook.year = Number(ctx.request.body.publishYear)
   addingBook.numberCopies = Number(ctx.request.body.numberCopies)
 
-  books.push(addingBook)
+  // books.push(addingBook)
 
   ctx.body = 'Книга добавлена'
 
@@ -674,7 +672,7 @@ router.post('/api/books/take-book', async (ctx, next) => {
   userTakenBook.dateIssue = new Date()
   userTakenBook.dateReturn = new Date(2032, 0, 1)
 
-  borrowedBooks.push(userTakenBook)
+  // borrowedBooks.push(userTakenBook)
 
   ctx.body = 'Книга взята'
 
