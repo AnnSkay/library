@@ -10,6 +10,46 @@ const router = new Router()
 app.use(bodyParser())
 app.use(cors())
 
+interface UserType {
+  id?: number;
+  name?: string;
+  lastname?: string;
+  login?: string;
+  password?: string;
+  role?: string;
+  phone?: string;
+}
+
+interface BookType {
+  id?: number;
+  title?: string;
+  author?: string;
+  houseId?: number;
+  houseTitle?: string;
+  genreId?: number;
+  genreTitle?: string;
+  year?: number;
+  numberCopies?: number;
+  dateIssue?: Date | string;
+  dateIssueFormat?: string;
+  userName?: string;
+  userLastname?: string;
+  userEmail?: string;
+  userPhone?: string;
+}
+
+interface HouseAndGenreType {
+  id: number;
+  title: string;
+}
+
+interface BorrowedBookType {
+  bookId?: number;
+  userId?: number;
+  dateIssue?: Date;
+  dateReturn?: Date;
+}
+
 const houses = [
   {
     id: 1,
@@ -236,28 +276,28 @@ const borrowedBooks = [
 ]
 
 // функция получения даты в формате 'dd.mm.yy г. hh:mm'
-const getDateFormat = (date: any) => {
-  let day: any = date.getDate()
+const getDateFormat = (date: Date) => {
+  let day: number | string = date.getDate()
   if (day < 10) {
     day = `0${day}`
   }
 
-  let month: any = date.getMonth() + 1
+  let month: number | string = date.getMonth() + 1
   if (month < 10) {
     month = `0${month}`
   }
 
-  let year: any = date.getFullYear() % 100
+  let year: number | string = date.getFullYear() % 100
   if (year < 10) {
     year = `0${year}`
   }
 
-  let hours: any = date.getHours()
+  let hours: number | string = date.getHours()
   if (hours < 10) {
     hours = `0${hours}`
   }
 
-  let minutes: any = date.getMinutes()
+  let minutes: number | string = date.getMinutes()
   if (minutes < 10) {
     minutes = `0${minutes}`
   }
@@ -266,7 +306,7 @@ const getDateFormat = (date: any) => {
 }
 
 // функция получения книги с жанром и издательством в виде текста, а не id
-const getBookData = (book: any) => {
+const getBookData = (book: BookType) => {
   const houseTitle = (houses.find(house => house.id === book.houseId) || {}).title || ''
   const genreTitle = (genres.find(genre => genre.id === book.genreId) || {}).title || ''
 
@@ -277,13 +317,16 @@ const getBookData = (book: any) => {
 }
 
 // функция определения правильного жанра/издательства для добавления новой книги
-const getUniqueBookValue = (array: any[], nameArray: string, findingElement: string) => {
+const getUniqueBookValue = (array: HouseAndGenreType[], nameArray: string, findingElement: string) => {
   const sameElement: string = (array.find(element => element.title === findingElement) || {}).title || ''
 
   if (sameElement) {
     return sameElement
   } else {
-    const obj: any = {}
+    const obj = {
+      id: 0,
+      title: ''
+    }
 
     obj.id = array[array.length - 1].id + 1
     obj.title = findingElement
@@ -300,26 +343,8 @@ const getUniqueBookValue = (array: any[], nameArray: string, findingElement: str
   }
 }
 
-// отправляет список жанров для раскрывающего списка поиска книг
-router.get('/api/genres', async (ctx, next) => {
-  console.log('attempt genres', ctx.request.body)
-
-  ctx.body = genres
-
-  await next()
-})
-
-// отправляет список издательств для раскрывающего списка поиска книг
-router.get('/api/houses', async (ctx, next) => {
-  console.log('attempt houses', ctx.request.body)
-
-  ctx.body = houses
-
-  await next()
-})
-
 // отправляет данные пользователя по полученному id
-router.post('/api/user', async (ctx, next) => {
+router.post('/api/users/user-data', async (ctx, next) => {
   console.log('attempt user', ctx.request.body)
 
   ctx.body = users.find(user => user.id === Number(ctx.request.body.id)) || 'this user was not found'
@@ -327,8 +352,30 @@ router.post('/api/user', async (ctx, next) => {
   await next()
 })
 
+// осуществляет вход пользователя по логину и паролю
+router.post('/api/users/login', async (ctx, next) => {
+  console.log('attempt login', ctx.request.body)
+
+  for (let i = 0; i < users.length; i++) {
+    if (ctx.request.body.login === users[i].login &&
+      ctx.request.body.password === users[i].password) {
+      ctx.body = {
+        id: users[i].id,
+        isSuccess: true
+      }
+      return
+    }
+  }
+
+  ctx.body = {
+    isSuccess: false
+  }
+
+  await next()
+})
+
 // добавляет пользователя в базу при регистрации по полученным данным из полей ввода
-router.post('/api/addUser', async (ctx, next) => {
+router.post('/api/users/add-user', async (ctx, next) => {
   console.log('attempt addUser', ctx.request.body)
 
   for (let i = 0; i < users.length; i++) {
@@ -339,9 +386,17 @@ router.post('/api/addUser', async (ctx, next) => {
     }
   }
 
-  const user: any = {}
+  const user = {
+    id: 0,
+    name: '',
+    lastname: '',
+    login: '',
+    password: '',
+    role: '',
+    phone: ''
+  }
 
-  user.id = users[users.length - 1].id + 1
+  user.id = users[users.length - 1].id || -1 + 1
   user.name = ctx.request.body.name
   user.lastname = ctx.request.body.lastname
   user.login = ctx.request.body.email
@@ -351,13 +406,13 @@ router.post('/api/addUser', async (ctx, next) => {
 
   users.push(user)
 
-  ctx.body = `Вы зарегистрированы`
+  ctx.body = 'Вы зарегистрированы'
 
   await next()
 })
 
 // изменяет личные данные пользователя
-router.post('/api/changeUserData', async (ctx, next) => {
+router.post('/api/users/change-user-data', async (ctx, next) => {
   console.log('attempt changeUserData', ctx.request.body)
 
   for (let i = 0; i < users.length; i++) {
@@ -379,7 +434,7 @@ router.post('/api/changeUserData', async (ctx, next) => {
 })
 
 // изменяет пароль пользователя
-router.post('/api/changeUserPassword', async (ctx, next) => {
+router.post('/api/users/change-user-password', async (ctx, next) => {
   console.log('attempt changeUserPassword', ctx.request.body)
 
   for (let i = 0; i < users.length; i++) {
@@ -397,22 +452,42 @@ router.post('/api/changeUserPassword', async (ctx, next) => {
   await next()
 })
 
+// отправляет список жанров для раскрывающего списка поиска книг
+router.get('/api/books/genres', async (ctx, next) => {
+  console.log('attempt genres', ctx.request.body)
+
+  ctx.body = genres
+
+  await next()
+})
+
+// отправляет список издательств для раскрывающего списка поиска книг
+router.get('/api/books/houses', async (ctx, next) => {
+  console.log('attempt houses', ctx.request.body)
+
+  ctx.body = houses
+
+  await next()
+})
+
 // поиск книг по полученному фильтру
-router.post('/api/books', async (ctx, next) => {
-  console.log('attempt books', ctx.request.body)
+router.get('/api/books/found-by-filter', async (ctx, next) => {
+  console.log('attempt books', ctx.request.query)
 
-  const booksFilter: any[] = []
+  const booksFilter: BookType[] = []
+  const bookIsAvailable = ctx.request.query.bookIsAvailable === 'true'
 
-  const houseId = (houses.find(house => house.title === ctx.request.body.publishHouse) || {}).id || -1
-  const genreId = (genres.find(genre => genre.title === ctx.request.body.genre) || {}).id || -1
+  const houseId = (houses.find(house => house.title === ctx.request.query.bookPublishHouse) || {}).id || -1
+  const genreId = (genres.find(genre => genre.title === ctx.request.query.bookGenre) || {}).id || -1
 
   for (let i = 0; i < books.length; i++) {
-    if (books[i].title.includes(ctx.request.body.title) &&
-        books[i].author.includes(ctx.request.body.author) &&
-        (books[i].houseId === houseId || ctx.request.body.publishHouse === '') &&
-        (books[i].genreId === genreId || ctx.request.body.genre === '') &&
-        (books[i].year === Number(ctx.request.body.publishYear) || ctx.request.body.publishYear === '') &&
-        ((books[i].numberCopies > 0 && ctx.request.body.isAvailable === true) || ctx.request.body.isAvailable === false)
+    if (
+      books[i].title.includes(<string>ctx.request.query.bookTitle) &&
+      books[i].author.includes(<string>ctx.request.query.bookAuthor) &&
+      (books[i].houseId === houseId || !ctx.request.query.bookPublishHouse) &&
+      (books[i].genreId === genreId || !ctx.request.query.bookGenre) &&
+      (books[i].year === Number(ctx.request.query.bookPublishYear) || !ctx.request.query.bookPublishYear) &&
+      ((books[i].numberCopies > 0 && bookIsAvailable) || !bookIsAvailable)
     ) {
       booksFilter.push(getBookData(books[i]))
     }
@@ -424,22 +499,22 @@ router.post('/api/books', async (ctx, next) => {
 })
 
 // отправляет список всех взятых книг
-router.get('/api/allBorrowedBooks', async (ctx, next) => {
+router.get('/api/books/all-borrowed', async (ctx, next) => {
   console.log('attempt allBorrowedBooks', ctx.request.body)
 
-  const allBorrowedBooks: any[] = []
+  const allBorrowedBooks: BookType[] = []
 
   for (let i = 0; i < borrowedBooks.length; i++) {
     if (borrowedBooks[i].dateReturn.getTime() > new Date().getTime()) {
-      let borrowedBook: any = {}
+      const borrowedBook: BookType = {}
 
-      const bookInf: any = books.find(book => book.id === borrowedBooks[i].bookId) || {}
-      const user: any = users.find(user => user.id === borrowedBooks[i].userId) || {}
+      const bookInf: BookType = books.find(book => book.id === borrowedBooks[i].bookId) || {}
+      const user: UserType = users.find(user => user.id === borrowedBooks[i].userId) || {}
 
       borrowedBook.id = bookInf.id
       borrowedBook.title = bookInf.title
       borrowedBook.author = bookInf.author
-      borrowedBook. houseId = bookInf. houseId
+      borrowedBook.houseId = bookInf.houseId
       borrowedBook.genreId = bookInf.genreId
       borrowedBook.year = bookInf.year
 
@@ -468,14 +543,14 @@ router.get('/api/allBorrowedBooks', async (ctx, next) => {
 })
 
 // отправляет список книг, которые находятся на руках у пользователя, по полученному id пользователя
-router.post('/api/borrowedBooksByUser', async (ctx, next) => {
-  console.log('attempt borrowedBooksByUser', ctx.request.body)
+router.get('/api/books/borrowed-by-user', async (ctx, next) => {
+  console.log('attempt borrowedBooksByUser', ctx.request.query)
 
-  const userBorrowedBooks: any[] = []
+  const userBorrowedBooks: BookType[] = []
 
   for (let i = 0; i < borrowedBooks.length; i++) {
-    if (borrowedBooks[i].userId === Number(ctx.request.body.id) &&
-       (borrowedBooks[i].dateReturn.getTime() > new Date().getTime())
+    if (borrowedBooks[i].userId === Number(ctx.request.query.id) &&
+      (borrowedBooks[i].dateReturn.getTime() > new Date().getTime())
     ) {
       for (let j = 0; j < books.length; j++) {
         if (books[j].id === borrowedBooks[i].bookId) {
@@ -499,14 +574,14 @@ router.post('/api/borrowedBooksByUser', async (ctx, next) => {
   await next()
 })
 
-// отправляет список книг по полученному автору
-router.post('/api/booksByTitle', async (ctx, next) => {
-  console.log('attempt booksByTitle', ctx.request.body)
+// отправляет список книг по полученному названию книги
+router.get('/api/books/found-by-title', async (ctx, next) => {
+  console.log('attempt booksByTitle', ctx.request.query)
 
-  const booksByTitle: any[] = []
+  const booksByTitle: BookType[] = []
 
   for (let i = 0; i < books.length; i++) {
-    if (books[i].title.includes(ctx.request.body.searchingBookTitle)) {
+    if (books[i].title.includes(<string>ctx.request.query.bookTitle)) {
       booksByTitle.push(getBookData(books[i]))
     }
   }
@@ -517,13 +592,13 @@ router.post('/api/booksByTitle', async (ctx, next) => {
 })
 
 // позволяет добавить новую книгу
-router.post('/api/addBook', async (ctx, next) => {
+router.post('/api/books/add-book', async (ctx, next) => {
   console.log('attempt addBook', ctx.request.body)
 
-  const addingBook: any = {}
+  const addingBook: BookType = {}
 
-  let publishHouseTitle: any = ctx.request.body.publishHouse
-  let genreTitle: any = ctx.request.body.genre
+  let publishHouseTitle = ctx.request.body.publishHouse
+  let genreTitle = ctx.request.body.genre
 
   if (!ctx.request.body.publishHouse) {
     if (!ctx.request.body.otherPublishHouse) {
@@ -538,30 +613,18 @@ router.post('/api/addBook', async (ctx, next) => {
       genreTitle = 'Нет жанра'
     } else {
       genreTitle = getUniqueBookValue(genres, 'genres', ctx.request.body.otherGenre)
-
-      // const findSameGenre = (genres.find(genre => genre.title === ctx.request.body.otherGenre) || {}).title || ''
-      //
-      // if (findSameGenre) {
-      //   genreTitle = findSameGenre
-      // } else {
-      //   const genre: any = {}
-      //   genre.id = genres[genres.length - 1].id + 1
-      //   genre.title = ctx.request.body.otherGenre
-      //   genres.push(genre)
-      //   genreTitle = ctx.request.body.otherGenre
-      // }
     }
   }
 
-  const houseId = (houses.find(house => house.title === publishHouseTitle) || {}).id || ''
-  const genreId = (genres.find(genre => genre.title === genreTitle) || {}).id || ''
+  const houseId = (houses.find(house => house.title === publishHouseTitle) || {}).id || -1
+  const genreId = (genres.find(genre => genre.title === genreTitle) || {}).id || -1
 
   for (let i = 0; i < books.length; i++) {
     if (ctx.request.body.title === books[i].title &&
-        ctx.request.body.author === books[i].author &&
-        houseId === books[i].houseId &&
-        genreId === books[i].genreId &&
-        Number(ctx.request.body.publishYear) === books[i].year
+      ctx.request.body.author === books[i].author &&
+      houseId === books[i].houseId &&
+      genreId === books[i].genreId &&
+      Number(ctx.request.body.publishYear) === books[i].year
     ) {
       ctx.body = 'Такая книга уже существует'
 
@@ -569,7 +632,7 @@ router.post('/api/addBook', async (ctx, next) => {
     }
   }
 
-  addingBook.id = books[books.length - 1].id + 1
+  addingBook.id = (books[books.length - 1]).id + 1
   addingBook.title = ctx.request.body.title
   addingBook.author = ctx.request.body.author
   addingBook.houseId = houseId
@@ -585,15 +648,15 @@ router.post('/api/addBook', async (ctx, next) => {
 })
 
 // позволяет взять книгу пользователю
-router.post('/api/takeBook', async (ctx, next) => {
+router.post('/api/books/take-book', async (ctx, next) => {
   console.log('attempt takeBook', ctx.request.body)
 
-  const userTakenBook: any = {}
+  const userTakenBook: BorrowedBookType = {}
 
   for (let i = 0; i < borrowedBooks.length; i++) {
     if (borrowedBooks[i].bookId === Number(ctx.request.body.bookId) &&
-        borrowedBooks[i].userId === Number(ctx.request.body.id) &&
-        borrowedBooks[i].dateReturn.getTime() > new Date().getTime()) {
+      borrowedBooks[i].userId === Number(ctx.request.body.id) &&
+      borrowedBooks[i].dateReturn.getTime() > new Date().getTime()) {
       ctx.body = 'Эта книга уже была взята Вами'
 
       return
@@ -606,8 +669,8 @@ router.post('/api/takeBook', async (ctx, next) => {
     }
   }
 
-  userTakenBook.bookId = Number(ctx.request.body.bookId)
-  userTakenBook.userId = Number(ctx.request.body.id)
+  userTakenBook.bookId = parseInt(ctx.request.body.bookId, 10)
+  userTakenBook.userId = parseInt(ctx.request.body.id, 10)
   userTakenBook.dateIssue = new Date()
   userTakenBook.dateReturn = new Date(2032, 0, 1)
 
@@ -619,7 +682,7 @@ router.post('/api/takeBook', async (ctx, next) => {
 })
 
 // позволяет удалить книгу
-router.post('/api/deleteBook', async (ctx, next) => {
+router.post('/api/books/delete-book', async (ctx, next) => {
   console.log('attempt deleteBook', ctx.request.body)
 
   books = books.filter(book => book.id !== ctx.request.body.bookId)
@@ -630,11 +693,11 @@ router.post('/api/deleteBook', async (ctx, next) => {
 })
 
 // позволяет вернуть взятую книгу
-router.post('/api/returnBook', async (ctx, next) => {
+router.post('/api/books/return-book', async (ctx, next) => {
   console.log('attempt returnBook', ctx.request.body)
   for (let i = 0; i < borrowedBooks.length; i++) {
     if (borrowedBooks[i].bookId === Number(ctx.request.body.bookId) &&
-        borrowedBooks[i].userId === Number(ctx.request.body.id)) {
+      borrowedBooks[i].userId === Number(ctx.request.body.id)) {
       borrowedBooks[i].dateReturn = new Date()
     }
   }
@@ -646,23 +709,6 @@ router.post('/api/returnBook', async (ctx, next) => {
   }
 
   ctx.body = borrowedBooks
-
-  await next()
-})
-
-// осуществляет вход пользователя по логину и паролю
-router.post('/api/login', async (ctx, next) => {
-  console.log('attempt login', ctx.request.body)
-
-  for (let i = 0; i < users.length; i++) {
-    if (ctx.request.body.login === users[i].login &&
-        ctx.request.body.password === users[i].password) {
-      ctx.body = users[i].id
-      return
-    }
-  }
-
-  ctx.body = 'failed'
 
   await next()
 })
