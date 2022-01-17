@@ -42,12 +42,12 @@ interface HouseAndGenreType {
   title: string;
 }
 
-interface BorrowedBookType {
-  bookId?: number;
-  userId?: number;
-  dateIssue?: Date;
-  dateReturn?: Date;
-}
+// interface BorrowedBookType {
+//   bookId?: number;
+//   userId?: number;
+//   dateIssue?: Date;
+//   dateReturn?: Date;
+// }
 
 const houses = [
   {
@@ -593,7 +593,15 @@ router.get('/api/books/found-by-title', async (ctx, next) => {
 router.post('/api/books/add-book', async (ctx, next) => {
   console.log('attempt addBook', ctx.request.body)
 
-  const addingBook: BookType = {}
+  const addingBook = {
+    id: 0,
+    title: '',
+    author: '',
+    houseId: 0,
+    genreId: 0,
+    year: 0,
+    numberCopies: 0
+  }
 
   let publishHouseTitle = ctx.request.body.publishHouse
   let genreTitle = ctx.request.body.genre
@@ -630,7 +638,7 @@ router.post('/api/books/add-book', async (ctx, next) => {
     }
   }
 
-  addingBook.id = (books[books.length - 1]).id + 1
+  addingBook.id = books[books.length - 1].id + 1
   addingBook.title = ctx.request.body.title
   addingBook.author = ctx.request.body.author
   addingBook.houseId = houseId
@@ -638,7 +646,7 @@ router.post('/api/books/add-book', async (ctx, next) => {
   addingBook.year = Number(ctx.request.body.publishYear)
   addingBook.numberCopies = Number(ctx.request.body.numberCopies)
 
-  // books.push(addingBook)
+  books.push(addingBook)
 
   ctx.body = 'Книга добавлена'
 
@@ -649,7 +657,12 @@ router.post('/api/books/add-book', async (ctx, next) => {
 router.post('/api/books/take-book', async (ctx, next) => {
   console.log('attempt takeBook', ctx.request.body)
 
-  const userTakenBook: BorrowedBookType = {}
+  const userTakenBook = {
+    bookId: 0,
+    userId: 0,
+    dateIssue: new Date(),
+    dateReturn: new Date()
+  }
 
   for (let i = 0; i < borrowedBooks.length; i++) {
     if (borrowedBooks[i].bookId === Number(ctx.request.body.bookId) &&
@@ -672,7 +685,7 @@ router.post('/api/books/take-book', async (ctx, next) => {
   userTakenBook.dateIssue = new Date()
   userTakenBook.dateReturn = new Date(2032, 0, 1)
 
-  // borrowedBooks.push(userTakenBook)
+  borrowedBooks.push(userTakenBook)
 
   ctx.body = 'Книга взята'
 
