@@ -106,8 +106,8 @@ const genres = [
 const users = [
   {
     id: 111,
-    name: 'Петя',
-    lastname: 'Петров',
+    name: '',
+    lastname: '',
     login: 'petya@mail.ru',
     password: '123',
     role: 'USER',
@@ -341,6 +341,44 @@ const getUniqueBookValue = (array: HouseAndGenreType[], nameArray: string, findi
     return findingElement
   }
 }
+
+const getHouseAndGenreIdsForAddOrEditBook = (house: string, otherHouse: string, genre: string, otherGenre: string) => {
+  let publishHouseTitle = house
+  let genreTitle = genre
+
+  if (!house) {
+    if (!otherHouse) {
+      publishHouseTitle = 'Нет издательства'
+    } else {
+      publishHouseTitle = getUniqueBookValue(houses, 'houses', otherHouse)
+    }
+  }
+
+  if (!genre) {
+    if (!otherGenre) {
+      genreTitle = 'Нет жанра'
+    } else {
+      genreTitle = getUniqueBookValue(genres, 'genres', otherGenre)
+    }
+  }
+
+  const houseId = (houses.find(house => house.title === publishHouseTitle) || {}).id || -1
+  const genreId = (genres.find(genre => genre.title === genreTitle) || {}).id || -1
+
+  return {
+    houseId: houseId,
+    genreId: genreId
+  }
+}
+
+// отправляет список пользователей
+router.get('/api/users/allUsers', async (ctx, next) => {
+  console.log('attempt users', ctx.request.body)
+
+  ctx.body = users
+
+  await next()
+})
 
 // отправляет данные пользователя по полученному id
 router.post('/api/users/user-data', async (ctx, next) => {
@@ -593,44 +631,20 @@ router.get('/api/books/found-by-title', async (ctx, next) => {
 router.post('/api/books/add-book', async (ctx, next) => {
   console.log('attempt addBook', ctx.request.body)
 
-  // const addingBook = {
-  //   id: 0,
-  //   title: '',
-  //   author: '',
-  //   houseId: 0,
-  //   genreId: 0,
-  //   year: 0,
-  //   numberCopies: 0
-  // }
   const addingBook: BookType = {}
 
-  let publishHouseTitle = ctx.request.body.publishHouse
-  let genreTitle = ctx.request.body.genre
-
-  if (!ctx.request.body.publishHouse) {
-    if (!ctx.request.body.otherPublishHouse) {
-      publishHouseTitle = 'Нет издательства'
-    } else {
-      publishHouseTitle = getUniqueBookValue(houses, 'houses', ctx.request.body.otherPublishHouse)
-    }
-  }
-
-  if (!ctx.request.body.genre) {
-    if (!ctx.request.body.otherGenre) {
-      genreTitle = 'Нет жанра'
-    } else {
-      genreTitle = getUniqueBookValue(genres, 'genres', ctx.request.body.otherGenre)
-    }
-  }
-
-  const houseId = (houses.find(house => house.title === publishHouseTitle) || {}).id || -1
-  const genreId = (genres.find(genre => genre.title === genreTitle) || {}).id || -1
+  const houseAndGenreIds = getHouseAndGenreIdsForAddOrEditBook(
+    ctx.request.body.publishHouse,
+    ctx.request.body.otherPublishHouse,
+    ctx.request.body.genre,
+    ctx.request.body.otherGenre
+  )
 
   for (let i = 0; i < books.length; i++) {
     if (ctx.request.body.title === books[i].title &&
       ctx.request.body.author === books[i].author &&
-      houseId === books[i].houseId &&
-      genreId === books[i].genreId &&
+      houseAndGenreIds.houseId === books[i].houseId &&
+      houseAndGenreIds.genreId === books[i].genreId &&
       Number(ctx.request.body.publishYear) === books[i].year
     ) {
       ctx.body = 'Такая книга уже существует'
@@ -642,14 +656,45 @@ router.post('/api/books/add-book', async (ctx, next) => {
   addingBook.id = books[books.length - 1].id || -1 + 1
   addingBook.title = ctx.request.body.title
   addingBook.author = ctx.request.body.author
-  addingBook.houseId = houseId
-  addingBook.genreId = genreId
+  addingBook.houseId = houseAndGenreIds.houseId
+  addingBook.genreId = houseAndGenreIds.genreId
   addingBook.year = Number(ctx.request.body.publishYear)
   addingBook.numberCopies = Number(ctx.request.body.numberCopies)
 
   books.push(addingBook)
 
   ctx.body = 'Книга добавлена'
+
+  await next()
+})
+
+// позволяет изменить книгу
+router.post('/api/books/edit-book', async (ctx, next) => {
+  console.log('attempt editBook', ctx.request.body)
+
+  for (let i = 0; i < books.length; i++) {
+    if (books[i].id === Number(ctx.request.body.bookId)) {
+      const houseAndGenreIds = getHouseAndGenreIdsForAddOrEditBook(
+        ctx.request.body.publishHouse,
+        ctx.request.body.otherPublishHouse,
+        ctx.request.body.genre,
+        ctx.request.body.otherGenre
+      )
+
+      books[i].title = ctx.request.body.title
+      books[i].author = ctx.request.body.author
+      books[i].houseId = houseAndGenreIds.houseId
+      books[i].genreId = houseAndGenreIds.genreId
+      books[i].year = ctx.request.body.publishYear
+      books[i].numberCopies = ctx.request.body.numberCopies
+
+      ctx.body = 'Книга изменена'
+
+      return
+    }
+  }
+
+  ctx.body = 'Что-то пошло не так'
 
   await next()
 })
