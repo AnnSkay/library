@@ -103,7 +103,7 @@ const genres = [
   }
 ]
 
-const users = [
+let users = [
   {
     id: 111,
     name: '',
@@ -484,6 +484,49 @@ router.post('/api/users/change-user-password', async (ctx, next) => {
   }
 
   ctx.body = 'this user was not found'
+
+  await next()
+})
+
+// изменяет роль пользователя
+router.post('/api/users/change-role', async (ctx, next) => {
+  console.log('attempt changeRole', ctx.request.body)
+
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].id === Number(ctx.request.body.userId)) {
+      let role: string = ''
+
+      switch (ctx.request.body.userRole) {
+        case 'Обычный пользователь':
+          role = 'USER'
+          break
+        case 'Библиотекарь':
+          role = 'LIBR'
+          break
+        case 'Администратор':
+          role = 'ADMIN'
+      }
+
+      users[i].role = role
+
+      ctx.body = 'Роль изменена'
+
+      return
+    }
+  }
+
+  ctx.body = 'Произошла ошибка'
+
+  await next()
+})
+
+// позволяет удалить пользователя
+router.post('/api/users/delete-user', async (ctx, next) => {
+  console.log('attempt deleteUser', ctx.request.body)
+
+  users = users.filter(user => user.id !== ctx.request.body.id)
+
+  ctx.body = 'Пользователь удален'
 
   await next()
 })
